@@ -1,14 +1,15 @@
 import random
 import time
-import os.path
+import os
 import sys
+
 
 def main():
     parameters = {
         "length":               64,                             # How long to make the map
         "width":                64,                             # How wide to make the map
         "size":                 False,                          # Overrides length and width
-        "solidDensity":         random.random() * 0.5,          # How much solid rock to generate
+        "solidDensity":         random.random() * 0.3 + 0.2,    # How much solid rock to generate
         "wallDensity":          random.random() * 0.3 + 0.3,    # How much other rock to generate
         "oreDensity":           random.random() * 0.3 + 0.3,    # How common ore is
         "crystalDensity":       random.random() * 0.3 + 0.2,    # How common energy crystals are
@@ -18,21 +19,21 @@ def main():
         "floodLevel":           random.random() * 0.75,         # The height to be flooded with water or lava
         "floodType":            False,                          # Whether to flood with water or lava
         "flowDensity":          random.random() * 0.005,        # How common erosion sources are
-        "flowInterval":         random.randint(30, 180),        # How slow erosion spreads
+        "flowInterval":         random.randint(90, 180),        # How slow erosion spreads
         "preFlow":              random.randint(3, 8),           # How much erosion should spread before the level starts
-        "landslideDensity":     random.random() * 0.7,          # How common landslide sources are
+        "landslideDensity":     random.random() * 0.4,          # How common landslide sources are
         "landslideInterval":    random.randint(10, 300),        # How long between landslides
-        "monsterDensity":       random.random() * 0.0,          # How common monster sources are
-        "monsterInterval":      random.randint(30, 120),        # How long between monster attacks
-        "slugDensity":          random.random() * 0.08,         # How common slimy slug holes are
-        "terrain":              5,          # How much the height of the terrain varies
+        "monsterDensity":       random.random() * 0.7,          # How common monster sources are
+        "monsterInterval":      random.randint(90, 300),        # How long between monster attacks
+        "slugDensity":          random.random() * 0.01,         # How common slimy slug holes are
+        "terrain":              random.randint(1, 50),          # How much the height of the terrain varies
         "smoothness":           16,         # How smoothly the terrain slopes
         "oxygen":               False,      # How much oxygen to start with
         "biome":                False,      # Which biome to use
-        "show":                 False,      # Whether to show the map
         "stats":                True,       # Whether to show the statistics
         "save":                 True,       # Whether to save the file
         "name":                 'Untitled', # What to name the file
+        "show":                 False,      # Whether to show the map, does not work on Windows
     }
 
     # Apply any args from the command line
@@ -58,6 +59,12 @@ def main():
             done = True
         attempts += 1
 
+    if not done:
+        print("Unable to create a map with those parameters")
+
+    if parameters["stats"]:
+        input()
+
 
 def mapgen(params):
     # Start the timer
@@ -78,14 +85,14 @@ def mapgen(params):
 
     # Create the solid rock
     randomize(solidArray, 1 - params["solidDensity"])
-    smooth(solidArray)
+    speleogenesis(solidArray)
     cleanup(solidArray)
     if fillExtra(solidArray) == False:  # This is a chance to test map sanity
         return False
 
     # Create the other rocks
     randomize(wallArray, 1 - params["wallDensity"])
-    smooth(wallArray)
+    speleogenesis(wallArray)
     cleanup(wallArray)
     details(wallArray, 3)
 
@@ -98,14 +105,14 @@ def mapgen(params):
     # Create ore
     oreArray = createArray(params["length"], params["width"], -1)
     randomize(oreArray, 1 - params["oreDensity"])
-    smooth(oreArray)
+    speleogenesis(oreArray)
     cleanup(oreArray)
     details(oreArray, 4)
 
     # Create crystals
     crystalArray = createArray(params["length"], params["width"], -1)
     randomize(crystalArray, 1 - params["crystalDensity"])
-    smooth(crystalArray)
+    speleogenesis(crystalArray)
     cleanup(crystalArray)
     details(crystalArray, 5)
 
@@ -116,20 +123,14 @@ def mapgen(params):
     if not params["biome"]:
         params["biome"] = ["ice","rock","lava"][random.randint(0, 2)]
 
-    # Optionally set the flood type
-    if params["floodType"] == "water":
-        params["floodType"] = 6  # Water
-    if params["floodType"] == "lava":
-        params["floodType"] = 7  # Lava
-
     # It seems wrong to have water in a lava biome or lava in an ice biome
     if not params["floodType"]:
         if params["biome"] == "ice":
-            params["floodType"] = 6  # Water
+            params["floodType"] = "water"  # Water
         elif params["biome"] == "lava":
-            params["floodType"]= 7  # Lava
+            params["floodType"]= "lava"  # Lava
         else:  # Rock
-            params["floodType"] = random.randint(6, 7)  # Water or lava
+            params["floodType"] = ["water", "lava"][random.randint(0, 1)]  # Water or lava
 
     # Flood the low areas
     flood(wallArray, heightArray, params["floodLevel"], params["floodType"])
@@ -209,6 +210,7 @@ def mapgen(params):
     finish = time.process_time()
 
     # Optionally show the stats
+    print()
     if params["stats"]:
         print('Parameters:')
         for key in params.keys():
@@ -218,8 +220,11 @@ def mapgen(params):
         print('    Size: ', params["length"], 'x', params["width"])
         print('    Tiles:', params["length"] * params["width"])
         print('    Time: ', finish - start, 'seconds')
-        print('    Speed:', (params["length"] * params["width"]) / (finish - start), 'tiles per second')
-
+        if finish - start == 0:
+            print('Finished with infinite speed!')
+        else:
+            print('    Speed:', (params["length"] * params["width"]) / (finish - start), 'tiles per second')
+        print()
     return MMtext
 
 
@@ -235,22 +240,24 @@ def addSeams(array, resourceArray, density, type):
 def addRechargeSeams(array, density, type):
     for i in range(1, len(array) - 1):
         for j in range(1, len(array[0]) - 1):
-            # Only if at least two opposite sides have solid rock
-            if ((((array[i + 1][j] == 4) and
-                (array[i - 1][j] == 4)) or
-                ((array[i][j + 1] == 4) and
-                (array[i][j - 1] == 4))) and
-                # Only if at least one side is or can become ground
-                ((array[i + 1][j] < 4) or (array[i - 1][j] < 4) or (array[i][j + 1] < 4) or (array[i][j - 1] < 4))):
-                if random.random() < density:
-                    array[i][j] = 12  # Recharge seam
-
+            # Only if the space is already solid rock
+            if array[i][j] == 4:  # Solid rock
+                # Only if at least two opposite sides are solid rock
+                if ((((array[i + 1][j] == 4) and
+                      (array[i - 1][j] == 4)) or
+                     ((array[i][j + 1] == 4) and
+                      (array[i][j - 1] == 4))) and
+                    # Only if at least one side is or can become ground
+                    ((array[i + 1][j] < 4) or (array[i - 1][j] < 4) or (array[i][j + 1] < 4) or (array[i][j - 1] < 4))):
+                    if random.random() < density:
+                        array[i][j] = 12  # Recharge seam
 
 
 # A landslide has occured
 def aLandslideHasOccured(array, stability):
     landslideArray = createArray(len(array), len(array[0]), -1)
     randomize(landslideArray, 1 - stability)
+    speleogenesis(landslideArray)
     details(landslideArray, 3)
 
     # Build the list
@@ -271,7 +278,7 @@ def aLandslideHasOccured(array, stability):
 def aMonsterHasAppeared(array, population):
     monsterArray = createArray(len(array), len(array[0]), -1)
     randomize(monsterArray, 1 - population)
-    smooth(monsterArray)
+    speleogenesis(monsterArray)
     details(monsterArray, 3)
 
     # Build the list
@@ -315,7 +322,7 @@ def chooseBase(array):
     if len(possibleBaseList) == 0:
         return False
 
-    # Choose one  TODO: Maybe choose multiple bases
+    # Choose one  TODO: Maybe add multiple bases or larger bases
     return [possibleBaseList[random.randint(0, len(possibleBaseList) - 1)]]
 
 
@@ -349,6 +356,9 @@ def convertToMM(walls,
                 oxygen,
                 name,
             ):
+
+    crystalCount = countAccessibleCrystals(walls, base[0], crystals)
+
     # Basic info
     MMtext = (
         'info{\n' +
@@ -357,8 +367,8 @@ def convertToMM(walls,
         'camerapos:Translation: X=' + str(base[0][1] * 300 + 300) +
                               ' Y=' + str(base[0][0] * 300 + 300) +
                               ' Z=' + str(height[base[0][0]][base[0][1]]) +
-                              ' Rotation: P=0.000000 Y=0.000000 R=0.000000 Scale X=1.000 Y=1.000 Z=1.000\n' +
-        'cameraangle:0,45,0\n' +
+                              ' Rotation: P=44.999992 Y=180.000000 R=0.000000 Scale X=1.000 Y=1.000 Z=1.000\n' +
+        # 'cameraangle:0,45,0\n' +
         'biome:' + biome + '\n' +
         'creator:Map Generator for Manic Miners\n' +
         'oxygen:' + str(oxygen) + '/' + str(oxygen) + '\n' +
@@ -430,13 +440,9 @@ def convertToMM(walls,
     MMtext += '}\n'
 
     # Objectives
-    crystalCount = 0
-    for i in range(len(walls)):
-        for j in range(len(walls[0])):
-            crystalCount += crystals[i][j]
     MMtext += 'objectives{\n'
-    # Collect half of the crystals
-    MMtext += 'resources: ' + str(crystalCount // 2) + ',0,0\n'
+    # Collect half of the crystals, maximum of 999
+    MMtext += 'resources: ' + str(min((crystalCount // 2), 999)) + ',0,0\n'
     MMtext += '}\n'
 
     # Buildings
@@ -446,18 +452,19 @@ def convertToMM(walls,
         'Translation: X=' + str(base[0][1] * 300 + 150.000) +
                     ' Y=' + str(base[0][0] * 300 + 150.000) +
                     ' Z=' + str(height[base[0][0]][base[0][1]]) +
-                    '1.000 Rotation: P=0.000000 Y=-89.999992 R=0.000000 Scale X=1.000 Y=1.000 Z=1.000\n' +
+                    ' Rotation: P=0.000000 Y=89.999992 R=0.000000 Scale X=1.000 Y=1.000 Z=1.000\n' +
         'Level=1\n' +
         'Teleport=True\n' +
         'Health=MAX\n' +
-        'Powerpaths=X=14 Y=7 Z=5/X=14 Y=7 Z=4/\n'  # TODO: Solve this part
+        'Powerpaths=X=0 Y=' + str(base[0][0]) + ' Z=' + str(base[0][1]) +
+        '/X=0 Y=' + str(base[0][0] + 1) + ' Z=' + str(base[0][1]) + '/\n'
     )
     MMtext += '}\n'
 
     # Monsters.  I hope this works
     MMtext += 'monsters{\n'
     MMtext += '}\n'
-    MMtext += 'monsterInterval{\n'
+    MMtext += 'monsterFrequency{\n'
     for i in range(1, len(monsterList) + 1):
         if len(monsterList[i - 1]):
             MMtext += str(i * monsterInterval) + ':'
@@ -468,7 +475,7 @@ def convertToMM(walls,
     MMtext += '}\n'
 
     # A landslide has occured
-    MMtext += 'landslideInterval{\n'
+    MMtext += 'landslideFrequency{\n'
     for i in range(1, len(landslideList) + 1):
         if len(landslideList[i - 1]):
             MMtext += str(i * landslideInterval) + ':'
@@ -495,10 +502,52 @@ def convertToMM(walls,
 
     # Briefing
     MMtext += 'briefing{\n'
-    MMtext += 'You must collect ' + str(crystalCount // 2) + ' energy crystals.  \n'
+    MMtext += 'You must collect ' + str(min((crystalCount // 2), 999)) + ' energy crystals.  \n'
     MMtext += '}\n'
 
     return MMtext
+
+
+# Count how many crystals we can actually get
+def countAccessibleCrystals(array, base, crystalArray):
+    spaces = [base]
+    tmap = createArray(len(array), len(array[0]), -1)
+
+    # Mark which spaces could be accessible
+    for i in range(1, len(array) - 1):  # Leave a margin of 1
+        for j in range(1, len(array[0]) - 1):
+            if array[i][j] in [0, 1, 2, 3, 8, 9, 10, 11, 13]:
+                tmap[i][j] = 0  # Accessible
+
+    tmap[base[0]][base[1]] = 1
+    i = 0
+    while i < len(spaces):
+        # Use shorter variable names for frequently used values
+        x = spaces[i][0]
+        y = spaces[i][1]
+
+        # Check each adjacent space
+        if tmap[x - 1][y] == 0:
+            tmap[x - 1][y] = 1
+            spaces.append((x - 1, y))
+        if tmap[x + 1][y] == 0:
+            tmap[x + 1][y] = 1
+            spaces.append((x + 1, y))
+        if tmap[x][y - 1] == 0:
+            tmap[x][y - 1] = 1
+            spaces.append((x, y - 1))
+        if tmap[x][y + 1] == 0:
+            tmap[x][y + 1] = 1
+            spaces.append((x, y + 1))
+
+        i += 1
+
+    # Count crystals in our list
+    count = 0
+    for space in spaces:
+        count += crystalArray[space[0]][space[1]]
+
+    return count
 
 
 # Create an array and fill it with something
@@ -582,7 +631,6 @@ def createFlowList(array, density, height, preFlow):
     for i in range(preFlow):
         totalSources = len(sources)
         for j in range(totalSources):
-        # for source in sources:
             adjacent = [
                 (sources[j][0] + 1, sources[j][1]),
                 (sources[j][0] - 1, sources[j][1]),
@@ -590,11 +638,9 @@ def createFlowList(array, density, height, preFlow):
                 (sources[j][0], sources[j][1] - 1),
             ]
             for space in adjacent:
-                if array[space[0]][space[1]] == 0:
+                if array[space[0]][space[1]] == 0 and random.random() < 0.5:
                     array[space[0]][space[1]] = 7  # Lava
                     sources.append(space)
-
-    # TODO: Check whether it matters if the source space is included in the list
 
     return spillList
 
@@ -737,7 +783,7 @@ def fillExtra(array):
                 tmap[i][j] = -1
 
     # Make a list of open spaces
-    spaces = openSpaces(tmap)
+    spaces = openSpaces(tmap, False)
 
     # Make sure the map even makes sense
     if len(spaces) < 1:  # The map failed
@@ -775,12 +821,12 @@ def findCaves(array, base):
                 tmap[i][j] = 0
 
     # Create the list of caverns
-    caveList = openSpaces(tmap)
+    caveList = openSpaces(tmap, True)
 
     # Find which cavern contains our base and remove it
     for i in range(len(caveList)):
         if base in caveList[i]:
-            caveList.insert(0, caveList.pop(i))
+            caveList.pop(i)
             break
 
     return caveList
@@ -790,6 +836,11 @@ def findCaves(array, base):
 def flood(array, heightArray, floodLevel, floodType):
     length = len(array)
     width = len(array[0])
+
+    if floodType == "water":
+        floodType = 6
+    else:
+        floodType = 7
 
     # Find the flood height
     minimum = heightArray[0][0]
@@ -867,7 +918,7 @@ def isTrue(s):
 
 
 # Search for open spaces
-def openSpaces(array):
+def openSpaces(array, corners):
     spaces = []  # List of lists of coordinates
     for i in range(1, len(array) - 1):  # Leave a margin of 1
         for j in range(1, len(array[0]) - 1):
@@ -895,6 +946,21 @@ def openSpaces(array):
                         array[x][y + 1] = 1
                         space.append((x, y + 1))
 
+                    # Optionally also check the corners
+                    if corners:
+                        if array[x - 1][y - 1] == 0:
+                            array[x - 1][y - 1] = 1
+                            space.append((x - 1, y - 1))
+                        if array[x + 1][y - 1] == 0:
+                            array[x + 1][y - 1] = 1
+                            space.append((x + 1, y - 1))
+                        if array[x - 1][y + 1] == 0:
+                            array[x - 1][y + 1] = 1
+                            space.append((x - 1, y + 1))
+                        if array[x + 1][y + 1] == 0:
+                            array[x + 1][y + 1] = 1
+                            space.append((x + 1, y + 1))
+
                     # Mark the current space as checked
                     array[x][y] = 1
 
@@ -917,6 +983,8 @@ def randomize(array, probability):
 
 # Save the output to a file
 def saveFile(filename, content):
+    # Remove spaces from the filename
+    filename = filename.replace(' ', '')
     # Make sure the filename is unique
     counter = 0  # Increment if the file exists
     while os.path.isfile(filename + (str(counter) if counter else '') + '.dat'):
@@ -928,6 +996,8 @@ def saveFile(filename, content):
     f.write(content)
     f.close()
     print("Saved to:", filename)
+    print('   ', os.path.join(os.getcwd(), filename))
+    print()
 
 
 # Set up the base at the chosen location
@@ -950,7 +1020,7 @@ def setBase(base, array, height):
 
 
 # Shape the random mess into caves
-def smooth(array):
+def speleogenesis(array):
     changed = True
     while changed:  # Run until nothing changes
         changed = False
@@ -983,4 +1053,5 @@ def smooth(array):
                         array[i][j] = -1
 
 
+# Do the thing
 main()
