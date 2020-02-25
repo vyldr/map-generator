@@ -1,6 +1,6 @@
 # Map Generator
 
-This program creates random maps to be used in Manic Miners.  It is available as a Python script or a Windows executable.
+This program creates random maps to be used in [Manic Miners](https://manicminers.baraklava.com/).  It is available as a Python script or a Windows executable.
 
 ## How to use
 
