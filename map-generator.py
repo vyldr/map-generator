@@ -195,6 +195,7 @@ def mapgen(params):
         base,
         params["oxygen"],
         params["name"],
+        params,
     )
 
     # Optionally display the map
@@ -355,6 +356,7 @@ def convertToMM(walls,
                 base,
                 oxygen,
                 name,
+                params,
             ):
 
     crystalCount = countAccessibleCrystals(walls, base[0], crystals)
@@ -372,7 +374,6 @@ def convertToMM(walls,
         'biome:' + biome + '\n' +
         'creator:Map Generator for Manic Miners\n' +
         'oxygen:' + str(oxygen) + '/' + str(oxygen) + '\n' +
-        'camerazoom:600.0\n' +
         'levelname:' + name + '\n' +
         'erosioninitialwaittime:10\n' +
         '}\n'
@@ -451,13 +452,20 @@ def convertToMM(walls,
         'BuildingToolStore_C\n' +
         'Translation: X=' + str(base[0][1] * 300 + 150.000) +
                     ' Y=' + str(base[0][0] * 300 + 150.000) +
-                    ' Z=' + str(height[base[0][0]][base[0][1]]) +
-                    ' Rotation: P=0.000000 Y=89.999992 R=0.000000 Scale X=1.000 Y=1.000 Z=1.000\n' +
+                    ' Z=' + str(height[base[0][0]][base[0][1]] + (50 if 'udts' in params else 0)) +
+                    ' Rotation: P=' + ('180' if 'udts' in params else '0') + '.000000 Y=89.999992 R=0.000000 Scale X=1.000 Y=1.000 Z=1.000\n' +
         'Level=1\n' +
         'Teleport=True\n' +
         'Health=MAX\n' +
-        'Powerpaths=X=0 Y=' + str(base[0][0]) + ' Z=' + str(base[0][1]) +
-        '/X=0 Y=' + str(base[0][0] + 1) + ' Z=' + str(base[0][1]) + '/\n'
+        # X = chunk number
+        # Y = row within chunk
+        # Z = col within chunk
+        'Powerpaths=X=' + str((len(walls[0]) // 8) * (base[0][0] // 8) + (base[0][1] // 8)) + 
+                  ' Y=' + str(base[0][0] % 8) + 
+                  ' Z=' + str(base[0][1] % 8) +
+                  '/X=' + str((len(walls[0]) // 8) * ((base[0][0] + 1) // 8) + (base[0][1] // 8)) + 
+                  ' Y=' + str((base[0][0] + 1) % 8) + 
+                  ' Z=' + str(base[0][1] % 8) + '/\n'
     )
     MMtext += '}\n'
 
