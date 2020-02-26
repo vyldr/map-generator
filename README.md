@@ -42,9 +42,9 @@ To create a level similar to "Lake of Fire"
 ### List of parameters
 | Parameter | Range of values | Default | Description |
 |-|-|-|-|
+| `size` | 4+ | 64 | Size of the map, rounds up to a multiple of 8
 | `length` | 4+ | 64 | How long to make the map
 | `width` | 4+ | 64 | How wide to make the map
-| `size` | 4+ | 64 | Overrides both length and width
 | `solidDensity` | 0.0 - <1.0 | random | How much solid rock to generate
 | `wallDensity` | 0.0 - <1.0 | random | How much other rock to generate
 | `oreDensity` | 0.0 - 1.0 | random | How common ore is

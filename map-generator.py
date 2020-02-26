@@ -72,6 +72,8 @@ def mapgen(params):
 
     # Set length and width
     if params["size"]:
+        # Round up to the next chunk
+        params["size"] = (params["size"] + 7) // 8 * 8
         params["length"] = params["size"]
         params["width"] = params["size"]
 
