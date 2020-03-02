@@ -28,7 +28,7 @@ def main():
         "slugDensity":          random.random() * 0.01,         # How common slimy slug holes are
         "terrain":              random.randint(1, 50),          # How much the height of the terrain varies
         "smoothness":           16,         # How smoothly the terrain slopes
-        "oxygen":               False,      # How much oxygen to start with
+        "oxygen":               -1,         # How much oxygen to start with
         "biome":                False,      # Which biome to use
         "stats":                True,       # Whether to show the statistics
         "save":                 True,       # Whether to save the file
@@ -78,7 +78,7 @@ def mapgen(params):
         params["width"] = params["size"]
 
     # Optionally set oxygen
-    if not params["oxygen"]:
+    if params["oxygen"] == -1:
         params["oxygen"] = params["length"] * params["width"] * 3
 
     # Create feature maps
@@ -377,7 +377,7 @@ def convertToMM(walls,
                               ' Rotation: P=44.999992 Y=180.000000 R=0.000000 Scale X=1.000 Y=1.000 Z=1.000\n' +
         'biome:' + biome + '\n' +
         'creator:Map Generator for Manic Miners\n' +
-        'oxygen:' + str(oxygen) + '/' + str(oxygen) + '\n' +
+        (('oxygen:' + str(oxygen) + '/' + str(oxygen) + '\n') if oxygen else '') +
         'levelname:' + name + '\n' +
         'erosioninitialwaittime:10\n' +
         '}\n'
