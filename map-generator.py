@@ -372,7 +372,6 @@ def convertToMM(walls,
                               ' Y=' + str(base[0][0] * 300 + 300) +
                               ' Z=' + str(height[base[0][0]][base[0][1]]) +
                               ' Rotation: P=44.999992 Y=180.000000 R=0.000000 Scale X=1.000 Y=1.000 Z=1.000\n' +
-        # 'cameraangle:0,45,0\n' +
         'biome:' + biome + '\n' +
         'creator:Map Generator for Manic Miners\n' +
         'oxygen:' + str(oxygen) + '/' + str(oxygen) + '\n' +
@@ -462,11 +461,11 @@ def convertToMM(walls,
         # X = chunk number
         # Y = row within chunk
         # Z = col within chunk
-        'Powerpaths=X=' + str((len(walls[0]) // 8) * (base[0][0] // 8) + (base[0][1] // 8)) + 
-                  ' Y=' + str(base[0][0] % 8) + 
+        'Powerpaths=X=' + str((len(walls[0]) // 8) * (base[0][0] // 8) + (base[0][1] // 8)) +
+                  ' Y=' + str(base[0][0] % 8) +
                   ' Z=' + str(base[0][1] % 8) +
-                  '/X=' + str((len(walls[0]) // 8) * ((base[0][0] + 1) // 8) + (base[0][1] // 8)) + 
-                  ' Y=' + str((base[0][0] + 1) % 8) + 
+                  '/X=' + str((len(walls[0]) // 8) * ((base[0][0] + 1) // 8) + (base[0][1] // 8)) +
+                  ' Y=' + str((base[0][0] + 1) % 8) +
                   ' Z=' + str(base[0][1] % 8) + '/\n'
     )
     MMtext += '}\n'
@@ -628,8 +627,6 @@ def createFlowList(array, density, height, preFlow):
                     flowArray[space[0]][space[1]] = 1  # Checked
             i += 1
 
-
-
         # Add the flowList to the spillList
         spillList.append(flowList)
 
@@ -756,27 +753,6 @@ def displayArr(array, stats=False):
         for i in range(len(set) - 1):
             differences.append(set[i + 1] - set[i])
         print(differences)
-
-
-# Display on the command line
-def displaySingle(array):
-    colors = {
-        0: '\033[48;2;5;21;16m',
-        1: '\033[48;2;178;120;61m',
-        2: '\033[48;2;153;102;51m',
-        3: '\033[48;2;128;84;43m',
-        4: '\033[48;2;102;66;33m',
-        5: '\033[48;2;61;38;20m',
-        -1: '\033[48;2;255;0;20m',
-    }
-    for i in range(len(array)):
-        for j in range(len(array[0])):
-            # Different color for each type
-            print(
-                colors[array[i][j]], # Background
-                '  ',
-                end='', sep='')
-        print('\033[0m')  # Reset the background and new line
 
 
 # Fill in all open areas except for the largest one
@@ -1034,11 +1010,14 @@ def speleogenesis(array):
     changed = True
     while changed:  # Run until nothing changes
         changed = False
-        # tmap = deepcopy(array)
         tmap = createArray(len(array), len(array[0]), 4)
+
+        # Copy the array
         for i in range(len(array)):
             for j in range(len(array[0])):
                 tmap[i][j] = array[i][j]
+
+        # Decide which spaces to change
         for i in range(1, len(array) - 1):
             for j in range(1, len(array[0]) - 1):
                 # Count adjacent spaces
@@ -1052,11 +1031,13 @@ def speleogenesis(array):
                 if tmap[i][j - 1] == -1:
                     adjacent += 1
 
-                # Change the values
+                # Change to empty if all neighbors are empty
                 if adjacent == 0:
                     if array[i][j] != 0:
                         changed = True
                         array[i][j] = 0
+
+                # Change to filled if at least three neighbors are filled
                 elif adjacent >= 3:
                     if array[i][j] != -1:
                         changed = True
