@@ -64,7 +64,7 @@ To create a level similar to "Lake of Fire"
 | `slugDensity` | 0.0 - <1.0 | random | How common slimy slug holes are
 | `terrain` | 1+ | random | How much the height of the terrain varies vertically
 | `smoothness` | 1+ | 16 | How smoothly the terrain slopes
-| `oxygen` | 1+ | Based on `size` | How much oxygen to start with
+| `oxygen` | 0+ | Based on `size` | How much oxygen to start with, 0 to disable
 | `biome` | rock, lava, ice | random | Which biome to use
 | `stats` | true or false | true | Whether to show the statistics
 | `save` | true or false | true | Whether to save the file
@@ -76,3 +76,11 @@ To create a level similar to "Lake of Fire"
 - Some parameters, such as `wallDensity` or `floodLevel` can limit the number of ground tiles, which can make it impossible to set a starting point if their values are too high.  This will force the program to keep trying to create a level and eventually give up.
 - Setting the `length` and `width` parameters to different values will create a non-square map.  The map will still generate fine, but Manic Miners will not like it.
 - The objectives and challenges are often less interesting than those of maps created by people.  Feel free to edit the maps to add more interesting challenges.
+
+## Changes in version 1.1
+
+- Use `-oxygen false` or `-oxygen 0` to disable the oxygen limit.
+- Fixed the 'plateau effect' where the map was elevated thousands of units above the extended border.
+- If you can find enough crystals to build vehicles, the objective will be increased.
+- Erosion should work correctly now.
+- Fixed landslide frequency and locations.
