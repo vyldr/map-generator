@@ -22,7 +22,7 @@ def main():
         "flowInterval":         random.randint(20, 180),        # How slow erosion spreads
         "preFlow":              random.randint(3, 8),           # How much erosion should spread before the level starts
         "landslideDensity":     random.random() * 0.4,          # How common landslide sources are
-        "landslideInterval":    random.randint(10, 300),        # How long between landslides
+        "landslideInterval":    random.randint(10, 90),         # How long between landslides
         "monsterDensity":       random.random() * 0.7,          # How common monster sources are
         "monsterInterval":      random.randint(90, 300),        # How long between monster attacks
         "slugDensity":          random.random() * 0.01,         # How common slimy slug holes are
@@ -478,7 +478,7 @@ def convertToMM(walls,
         if len(monsterList[i - 1]):
             MMtext += str(i * monsterInterval) + ':'
         for space in monsterList[i - 1]:
-            MMtext += str(space[0]) + ',' + str(space[1]) + '/'
+            MMtext += str(space[1]) + ',' + str(space[0]) + '/'
         if len(monsterList[i - 1]):
             MMtext += '\n'
     MMtext += '}\n'
@@ -489,7 +489,7 @@ def convertToMM(walls,
         if len(landslideList[i - 1]):
             MMtext += str(i * landslideInterval) + ':'
         for space in landslideList[i - 1]:
-            MMtext += str(space[0]) + ',' + str(space[1]) + '/'
+            MMtext += str(space[1]) + ',' + str(space[0]) + '/'
         if len(landslideList[i - 1]):
             MMtext += '\n'
     MMtext += '}\n'
