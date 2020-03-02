@@ -361,7 +361,10 @@ def convertToMM(walls,
                 params,
             ):
 
-    crystalCount = countAccessibleCrystals(walls, base[0], crystals)
+    # Count all the crystals we can reach
+    crystalCount = countAccessibleCrystals(walls, base[0], crystals, False)
+    if crystalCount >= 14:  # More than enough crystals to get vehicles
+        crystalCount = countAccessibleCrystals(walls, base[0], crystals, True)
 
     # Basic info
     MMtext = (
@@ -518,14 +521,19 @@ def convertToMM(walls,
 
 
 # Count how many crystals we can actually get
-def countAccessibleCrystals(array, base, crystalArray):
+def countAccessibleCrystals(array, base, crystalArray, vehicles):
     spaces = [base]
     tmap = createArray(len(array), len(array[0]), -1)
+
+    # Choose the types of tiles we can cross
+    types = [0, 1, 2, 3, 8, 9, 10, 11, 13]
+    if vehicles:  # With vehicles we can cross water and lava
+        types = [0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 13]
 
     # Mark which spaces could be accessible
     for i in range(1, len(array) - 1):  # Leave a margin of 1
         for j in range(1, len(array[0]) - 1):
-            if array[i][j] in [0, 1, 2, 3, 8, 9, 10, 11, 13]:
+            if array[i][j] in types:
                 tmap[i][j] = 0  # Accessible
 
     tmap[base[0]][base[1]] = 1
