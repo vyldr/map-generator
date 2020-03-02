@@ -26,7 +26,7 @@ def main():
         "monsterDensity":       random.random() * 0.7,          # How common monster sources are
         "monsterInterval":      random.randint(90, 300),        # How long between monster attacks
         "slugDensity":          random.random() * 0.01,         # How common slimy slug holes are
-        "terrain":              random.randint(1, 50),          # How much the height of the terrain varies
+        "terrain":              random.randint(0, 25),          # How much the height of the terrain varies
         "smoothness":           16,         # How smoothly the terrain slopes
         "oxygen":               -1,         # How much oxygen to start with
         "biome":                False,      # Which biome to use
@@ -874,7 +874,7 @@ def heightMap(length, width, terrain, smoothness):
     for i in range(-smoothness, length, 1):
         for j in range(-smoothness, width, 1):
             # Sets of four overlapping squares
-            value = random.randint(0, int(terrain))
+            value = random.randint(-int(terrain), int(terrain))
             fillSquare(i, j, array, length, width, smoothness, value)
 
     return array
