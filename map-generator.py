@@ -19,7 +19,7 @@ def main():
         "floodLevel":           random.random() * 0.75,         # The height to be flooded with water or lava
         "floodType":            False,                          # Whether to flood with water or lava
         "flowDensity":          random.random() * 0.005,        # How common erosion sources are
-        "flowInterval":         random.randint(90, 180),        # How slow erosion spreads
+        "flowInterval":         random.randint(20, 180),        # How slow erosion spreads
         "preFlow":              random.randint(3, 8),           # How much erosion should spread before the level starts
         "landslideDensity":     random.random() * 0.4,          # How common landslide sources are
         "landslideInterval":    random.randint(10, 300),        # How long between landslides
@@ -148,8 +148,8 @@ def mapgen(params):
     flowList = []
     if params["biome"] == 'lava':
         params["flowDensity"] *= 3
-    if params["floodType"] == 7:
-        flowList = createFlowList(wallArray, params["flowDensity"], heightArray, params["preFlow"])
+    if params["floodType"] == 7:  # Lava
+        flowList = createFlowList(wallArray, params["flowDensity"], heightArray, params["preFlow"], params["terrain"])
 
     # Set unstable walls and landslide rubble
     landslideList = aLandslideHasOccured(wallArray, params["landslideDensity"])
@@ -500,7 +500,7 @@ def convertToMM(walls,
         if len(flowList[i - 1]):
             MMtext += str(i * flowInterval) + ':'
         for space in flowList[i - 1]:
-            MMtext += str(space[0]) + ',' + str(space[1]) + '/'
+            MMtext += str(space[1]) + ',' + str(space[0]) + '/'
         if len(flowList[i - 1]):
             MMtext += '\n'
     MMtext += '}\n'
@@ -571,7 +571,7 @@ def createArray(x, y, fill):
 
 
 # Create a list of lava flow spaces
-def createFlowList(array, density, height, preFlow):
+def createFlowList(array, density, height, preFlow, terrain):
     flowArray = createArray(len(array), len(array[0]), -1)
     spillList = []
     flowSourceList = []
@@ -596,14 +596,6 @@ def createFlowList(array, density, height, preFlow):
         flowList = [source]
         flowArray[source[0]][source[1]] = 1  # Checked
 
-        # Sum of all corners.  Not really elevation but close enough
-        sourceElevation = (
-            (height[source[0]][source[1]]) +
-            (height[source[0] + 1][source[1]]) +
-            (height[source[0]][source[1] + 1]) +
-            (height[source[0] + 1][source[1] + 1])
-        )
-
         # Find spill zones
         i = 0
         while i < len(flowList):
@@ -613,6 +605,15 @@ def createFlowList(array, density, height, preFlow):
                 (flowList[i][0], flowList[i][1] + 1),
                 (flowList[i][0], flowList[i][1] - 1),
             ]
+
+            # Sum of all corners.  Not really elevation but close enough
+            sourceElevation = (
+                (height[flowList[i][0]][flowList[i][1]]) +
+                (height[flowList[i][0] + 1][flowList[i][1]]) +
+                (height[flowList[i][0]][flowList[i][1] + 1]) +
+                (height[flowList[i][0] + 1][flowList[i][1] + 1])
+            )
+
             # Add to flowList if not checked and lower elevation
             for space in adjacent:
                 # Sum of all corners.  Not really elevation but close enough
@@ -622,7 +623,7 @@ def createFlowList(array, density, height, preFlow):
                     (height[space[0]][space[1] + 1]) +
                     (height[space[0] + 1][space[1] + 1])
                 )
-                if flowArray[space[0]][space[1]] == 0 and sourceElevation > elevation:
+                if flowArray[space[0]][space[1]] == 0 and sourceElevation > elevation - (terrain * 3):
                     flowList.append(space)
                     flowArray[space[0]][space[1]] = 1  # Checked
             i += 1
