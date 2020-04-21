@@ -23,8 +23,8 @@ def main():
         "preFlow":              random.randint(3, 8),           # How much erosion should spread before the level starts
         "landslideDensity":     random.random() * 0.4,          # How common landslide sources are
         "landslideInterval":    random.randint(10, 90),         # How long between landslides
-        "monsterDensity":       random.random() * 0.7,          # How common monster sources are
-        "monsterInterval":      random.randint(90, 300),        # How long between monster attacks
+        # "monsterDensity":       random.random() * 0.7,          # How common monster sources are
+        # "monsterInterval":      random.randint(90, 300),        # How long between monster attacks
         "slugDensity":          random.random() * 0.01,         # How common slimy slug holes are
         "terrain":              random.randint(0, 25),          # How much the height of the terrain varies
         "smoothness":           16,         # How smoothly the terrain slopes
@@ -155,7 +155,7 @@ def mapgen(params):
     landslideList = aLandslideHasOccured(wallArray, params["landslideDensity"])
 
     # Set monster spawn points.  I have no idea if this works
-    monsterList = aMonsterHasAppeared(wallArray, params["monsterDensity"])
+    # monsterList = aMonsterHasAppeared(wallArray, params["monsterDensity"])
 
     # Slimy Slug holes
     aSlimySlugIsInvadingYourBase(wallArray, params["slugDensity"])
@@ -188,8 +188,8 @@ def mapgen(params):
         heightArray,
         crystalArray,
         oreArray,
-        params["monsterInterval"],
-        monsterList,
+        # params["monsterInterval"],
+        # monsterList,
         params["landslideInterval"],
         landslideList,
         params["flowInterval"],
@@ -278,24 +278,24 @@ def aLandslideHasOccured(array, stability):
 
 
 # A monster has appered!
-def aMonsterHasAppeared(array, population):
-    monsterArray = createArray(len(array), len(array[0]), -1)
-    randomize(monsterArray, 1 - population)
-    speleogenesis(monsterArray)
-    details(monsterArray, 3)
+# def aMonsterHasAppeared(array, population):
+#     monsterArray = createArray(len(array), len(array[0]), -1)
+#     randomize(monsterArray, 1 - population)
+#     speleogenesis(monsterArray)
+#     details(monsterArray, 3)
 
-    # Build the list
-    monsterList = [[], [], []]  # Three different monster frequencies
-    for i in range(1, len(array) - 1):
-        for j in range(1, len(array[0]) - 1):
-            # Sleeping monsters
-            # if monsterArray[i][j] > 0 and array[i][j] == 0:  # Ground
-                # TODO: add sleeping monsters here
-            # Monsters can appear here
-            if monsterArray[i][j] > 0 and array[i][j] in range(1, 4):
-                monsterList[monsterArray[i][j] - 1].append((i, j))
+#     # Build the list
+#     monsterList = [[], [], []]  # Three different monster frequencies
+#     for i in range(1, len(array) - 1):
+#         for j in range(1, len(array[0]) - 1):
+#             # Sleeping monsters
+#             # if monsterArray[i][j] > 0 and array[i][j] == 0:  # Ground
+#                 # TODO: add sleeping monsters here
+#             # Monsters can appear here
+#             if monsterArray[i][j] > 0 and array[i][j] in range(1, 4):
+#                 monsterList[monsterArray[i][j] - 1].append((i, j))
 
-    return monsterList
+#     return monsterList
 
 
 # A Slimy Slug is invading your base!
@@ -349,8 +349,8 @@ def convertToMM(walls,
                 height,
                 crystals,
                 ore,
-                monsterInterval,
-                monsterList,
+                # monsterInterval,
+                # monsterList,
                 landslideInterval,
                 landslideList,
                 flowInterval,
@@ -474,17 +474,17 @@ def convertToMM(walls,
     MMtext += '}\n'
 
     # Monsters.  I hope this works
-    MMtext += 'monsters{\n'
-    MMtext += '}\n'
-    MMtext += 'monsterFrequency{\n'
-    for i in range(1, len(monsterList) + 1):
-        if len(monsterList[i - 1]):
-            MMtext += str(i * monsterInterval) + ':'
-        for space in monsterList[i - 1]:
-            MMtext += str(space[1]) + ',' + str(space[0]) + '/'
-        if len(monsterList[i - 1]):
-            MMtext += '\n'
-    MMtext += '}\n'
+    # MMtext += 'monsters{\n'
+    # MMtext += '}\n'
+    # MMtext += 'monsterFrequency{\n'
+    # for i in range(1, len(monsterList) + 1):
+    #     if len(monsterList[i - 1]):
+    #         MMtext += str(i * monsterInterval) + ':'
+    #     for space in monsterList[i - 1]:
+    #         MMtext += str(space[1]) + ',' + str(space[0]) + '/'
+    #     if len(monsterList[i - 1]):
+    #         MMtext += '\n'
+    # MMtext += '}\n'
 
     # A landslide has occured
     MMtext += 'landslideFrequency{\n'
