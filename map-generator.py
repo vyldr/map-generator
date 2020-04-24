@@ -202,11 +202,13 @@ def mapgen(params):
 
     # Optionally display the map
     if params["show"] == True:
-        display(wallArray)
+        # display(wallArray)
+        displayPNG(wallArray, crystalArray, oreArray, landslideList, flowList)
     if params["show"] == "height":
         displayArr(heightArray)
     if params["show"] == "both":
-        display(wallArray)
+        # display(wallArray)
+        displayPNG(wallArray, crystalArray, oreArray, landslideList, flowList)
         displayArr(heightArray)
 
     # Stop timing
@@ -762,6 +764,57 @@ def displayArr(array, stats=False):
         for i in range(len(set) - 1):
             differences.append(set[i + 1] - set[i])
         print(differences)
+
+
+# Display the map as a PNG
+def displayPNG(wallArray, crystalArray, oreArray, landslideList, flowList):
+
+    # Get the image library here so it is only required if it will be used
+    from PIL import Image, ImageDraw
+
+    # Create the image
+    scale = 14
+    img = Image.new('RGB', (len(wallArray[0]) * scale + 1, len(wallArray) * scale + 1), color=(0,0,0))
+
+    # Color conversions
+    colors = {
+        '1':   (24,0,59),  # Ground
+        '101': (24,0,59),  # Ground
+        '26':  (166,72,233),  # Dirt
+        '30':  (139,43,199),  # Loose Rock
+        '34':  (108,10,163),  # Hard Rock
+        '38':  (59,0,108),  # Solid Rock
+        '11':  (6,45,182),  # Water
+        '111': (6,45,182),  # Water
+        '6':   (239,79,16),  # Lava
+        '106': (239,79,16),  # Lava
+        '63':  (56,44,73),  # Landslide rubble
+        '163': (56,44,73),  # Landslide rubble
+        '12':  (150,150,0),  # Slimy Slug hole
+        '112': (150,150,0),  # Slimy Slug hole
+        '42':  (185,255,25),  # Energy Crystal Seam
+        '46':  (146,62,20),  # Ore Seam
+        '50':  (250,255,14),  # Recharge Seam
+        '14':  (190,190,190),  # Building power path
+        '114': (190,190,190),  # Building power path
+    }
+
+    # Draw the tiles
+    draw = ImageDraw.Draw(img)
+    for i in range(len(wallArray)):
+        for j in range(len(wallArray[0])):
+            # Draw the tile
+            draw.rectangle([j * scale + 1, i * scale + 1, j * scale + (scale - 1), i * scale + (scale - 1)], fill=colors[wallArray[i][j]])
+
+            # Draw the crystal and ore indicators
+            if crystalArray[i][j] > 0:
+                draw.rectangle([j * scale + 2, i * scale + 2, j * scale + 4, i * scale + 4], fill=colors["42"])
+            if oreArray[i][j] > 0:
+                draw.rectangle([j * scale + 2, i * scale + 5, j * scale + 4, i * scale + 7], fill=colors["46"])
+
+    # Display the image
+    img.show()
+    # img.save("output.png")
 
 
 # Fill in all open areas except for the largest one
