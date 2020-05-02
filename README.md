@@ -69,7 +69,7 @@ To create a level similar to "Lake of Fire"
 | `stats` | true or false | true | Whether to show the statistics
 | `save` | true or false | true | Whether to save the file
 | `name` | 'level name' | 'Untitled' | What to name the file
-| `show` | true or false | false | Whether to show the map, does not work on Windows
+| `show` | true or false | false | Whether to show a preview of the map
 
 ## Notes
 
