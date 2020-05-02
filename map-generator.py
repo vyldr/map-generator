@@ -808,9 +808,22 @@ def displayPNG(wallArray, crystalArray, oreArray, landslideList, flowList):
 
             # Draw the crystal and ore indicators
             if crystalArray[i][j] > 0:
-                draw.rectangle([j * scale + 2, i * scale + 2, j * scale + 4, i * scale + 4], fill=colors["42"])
+                draw.rectangle([
+                    j * scale + 2,
+                    i * scale + scale - 4,
+                    j * scale + 4,
+                    i * scale + scale - 2],
+                    fill=colors["42"])
             if oreArray[i][j] > 0:
-                draw.rectangle([j * scale + 2, i * scale + 5, j * scale + 4, i * scale + 7], fill=colors["46"])
+                draw.rectangle([
+                    j * scale + 5,
+                    i * scale + scale - 4,
+                    j * scale + 7,
+                    i * scale + scale - 2],
+                    fill=colors["46"])
+
+    # Rotate to match starting camera
+    img = img.rotate(270)
 
     # Display the image
     img.show()
