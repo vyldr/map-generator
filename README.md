@@ -77,6 +77,11 @@ To create a level similar to "Lake of Fire"
 - Setting the `length` and `width` parameters to different values will create a non-square map.  The map will still generate fine, but Manic Miners will not like it.
 - The objectives and challenges are often less interesting than those of maps created by people.  Feel free to edit the maps to add more interesting challenges.
 
+## Changes in version 1.2
+
+- Added an image preview that appears when using `-show true`.
+- Removed monsters.
+
 ## Changes in version 1.1
 
 - Use `-oxygen false` or `-oxygen 0` to disable the oxygen limit.
