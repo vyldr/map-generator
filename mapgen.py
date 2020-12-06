@@ -3,37 +3,46 @@ import random
 
 class Mapgen:
 
-    parameters = {
-        "length":               32,                             # How long to make the map
-        "width":                32,                             # How wide to make the map
-        "size":                 False,                          # Overrides length and width
-        "solidDensity":         random.random() * 0.3 + 0.2,    # How much solid rock to generate
-        "wallDensity":          random.random() * 0.3 + 0.3,    # How much other rock to generate
-        "oreDensity":           random.random() * 0.3 + 0.3,    # How common ore is
-        "crystalDensity":       random.random() * 0.3 + 0.2,    # How common energy crystals are
-        "oreSeamDensity":       random.random() * 0.25,         # How common ore seams are
-        "crystalSeamDensity":   random.random() * 0.5,          # How common energy crystal seams are
-        "rechargeSeamDensity":  random.random() * 0.08 + 0.01,  # How common recharge seams are
-        "floodLevel":           random.random() * 0.75,         # The height to be flooded with water or lava
-        "floodType":            False,                          # Whether to flood with water or lava
-        "flowDensity":          random.random() * 0.005,        # How common erosion sources are
-        "flowInterval":         random.randint(20, 180),        # How slow erosion spreads
-        "preFlow":              random.randint(3, 8),           # How much erosion should spread before the level starts
-        "landslideDensity":     random.random() * 0.4,          # How common landslide sources are
-        "landslideInterval":    random.randint(10, 90),         # How long between landslides
-        "slugDensity":          random.random() * 0.01,         # How common slimy slug holes are
-        "terrain":              random.randint(0, 25),          # How much the height of the terrain varies
-        "smoothness":           16,          # How smoothly the terrain slopes
-        "oxygen":               0 - 1,       # How much oxygen to start with
-        "biome":                False,       # Which biome to use
-        "stats":                True,        # Whether to show the statistics
-        "save":                 True,        # Whether to save the file
-        "name":                 'Untitled',  # What to name the file
-        "overwrite":            False,       # Whether to overwrite an existing level
-        "show":                 False,       # Whether to show the map, does not work on Windows
-    }
+    def init_parameters(self):
+        self.parameters = {
+            "length":               32,                             # How long to make the map
+            "width":                32,                             # How wide to make the map
+            "size":                 32,                          # Overrides length and width
+            "solidDensity":         random.random() * 0.3 + 0.2,    # How much solid rock to generate
+            "wallDensity":          random.random() * 0.3 + 0.3,    # How much other rock to generate
+            "oreDensity":           random.random() * 0.3 + 0.3,    # How common ore is
+            "crystalDensity":       random.random() * 0.3 + 0.2,    # How common energy crystals are
+            "oreSeamDensity":       random.random() * 0.25,         # How common ore seams are
+            "crystalSeamDensity":   random.random() * 0.5,          # How common energy crystal seams are
+            "rechargeSeamDensity":  random.random() * 0.08 + 0.01,  # How common recharge seams are
+            "floodLevel":           random.random() * 0.75,         # The height to be flooded with water or lava
+            "floodType":            ["water", "lava"][random.randint(0, 1)],  # Whether to flood with water or lava
+            "flowDensity":          random.random() * 0.005,        # How common erosion sources are
+            "flowInterval":         random.randint(20, 180),        # How slow erosion spreads
+            "preFlow":              random.randint(3, 8),           # How much erosion should spread before the level starts
+            "landslideDensity":     random.random() * 0.4,          # How common landslide sources are
+            "landslideInterval":    random.randint(10, 90),         # How long between landslides
+            "slugDensity":          random.random() * 0.01,         # How common slimy slug holes are
+            "terrain":              random.randint(0, 25),          # How much the height of the terrain varies
+            "biome":                ["ice", "rock", "lava"][random.randint(0, 2)],  # Which biome to use
+            "smoothness":           16,          # How smoothly the terrain slopes
+            "oxygen":               0 - 1,       # How much oxygen to start with
+            "stats":                False,        # Whether to show the statistics
+            "save":                 False,        # Whether to save the file
+            "name":                 'Untitled',  # What to name the file
+            "overwrite":            False,       # Whether to overwrite an existing level
+            "show":                 False,       # Whether to show the map, does not work on Windows
+        }
+
+    def __init__(self):
+        self.seed = random.random()
+        self.init_parameters()
+        self.layers = {}
 
     def mapgen(self):
+
+        # Load the seed
+        random.seed(self.seed)
 
         # Set length and width
         if self.parameters["size"]:
@@ -49,7 +58,7 @@ class Mapgen:
         # Create feature maps
         solidArray = self.createArray(
             self.parameters["length"], self.parameters["width"], -1)  # Solid rock
-        wallArray = self.createArray(
+        self.layers["wall_array"] = self.createArray(
             self.parameters["length"], self.parameters["width"], -1)  # Other rock
 
         # Create the solid rock
@@ -60,59 +69,45 @@ class Mapgen:
             return False
 
         # Create the other rocks
-        self.randomize(wallArray, 1 - self.parameters["wallDensity"])
-        self.speleogenesis(wallArray)
-        self.cleanup(wallArray)
-        self.details(wallArray, 3)
+        self.randomize(self.layers["wall_array"], 1 - self.parameters["wallDensity"])
+        self.speleogenesis(self.layers["wall_array"])
+        self.cleanup(self.layers["wall_array"])
+        self.details(self.layers["wall_array"], 3)
 
         # Merge the permnent and temporary features
         for i in range(self.parameters["length"]):
             for j in range(self.parameters["width"]):
                 if solidArray[i][j] == -1:
-                    wallArray[i][j] = 4
+                    self.layers["wall_array"][i][j] = 4
 
         # Create ore
-        oreArray = self.createArray(self.parameters["length"], self.parameters["width"], -1)
-        self.randomize(oreArray, 1 - self.parameters["oreDensity"])
-        self.speleogenesis(oreArray)
-        self.cleanup(oreArray)
-        self.details(oreArray, 4)
+        self.layers["ore_array"] = self.createArray(self.parameters["length"], self.parameters["width"], -1)
+        self.randomize(self.layers["ore_array"], 1 - self.parameters["oreDensity"])
+        self.speleogenesis(self.layers["ore_array"])
+        self.cleanup(self.layers["ore_array"])
+        self.details(self.layers["ore_array"], 4)
 
         # Create crystals
-        crystalArray = self.createArray(self.parameters["length"], self.parameters["width"], -1)
-        self.randomize(crystalArray, 1 - self.parameters["crystalDensity"])
-        self.speleogenesis(crystalArray)
-        self.cleanup(crystalArray)
-        self.details(crystalArray, 5)
+        self.layers["crystal_array"] = self.createArray(self.parameters["length"], self.parameters["width"], -1)
+        self.randomize(self.layers["crystal_array"], 1 - self.parameters["crystalDensity"])
+        self.speleogenesis(self.layers["crystal_array"])
+        self.cleanup(self.layers["crystal_array"])
+        self.details(self.layers["crystal_array"], 5)
 
         # Creat a height map
         heightArray = self.heightMap(
             self.parameters["length"] + 1, self.parameters["width"] + 1, self.parameters["terrain"], self.parameters["smoothness"])
 
-        # Choose a biome
-        if not self.parameters["biome"]:
-            self.parameters["biome"] = ["ice", "rock", "lava"][random.randint(0, 2)]
-
-        # It seems wrong to have water in a lava biome or lava in an ice biome
-        if not self.parameters["floodType"]:
-            if self.parameters["biome"] == "ice":
-                self.parameters["floodType"] = "water"  # Water
-            elif self.parameters["biome"] == "lava":
-                self.parameters["floodType"] = "lava"  # Lava
-            else:  # Rock
-                self.parameters["floodType"] = [
-                    "water", "lava"][random.randint(0, 1)]  # Water or lava
-
         # Flood the low areas
-        self.flood(wallArray, heightArray,
+        self.flood(self.layers["wall_array"], heightArray,
                    self.parameters["floodLevel"], self.parameters["floodType"])
 
         # Organize the maps
         for i in range(self.parameters["length"]):
             for j in range(self.parameters["width"]):
-                if wallArray[i][j] not in range(1, 4):
-                    crystalArray[i][j] = 0
-                    oreArray[i][j] = 0
+                if self.layers["wall_array"][i][j] not in range(1, 4):
+                    self.layers["crystal_array"][i][j] = 0
+                    self.layers["ore_array"][i][j] = 0
 
         # Lava Flows / Erosion
         flowList = []
@@ -120,43 +115,47 @@ class Mapgen:
             self.parameters["flowDensity"] *= 3
         if self.parameters["floodType"] == 7:  # Lava
             flowList = self.createFlowList(
-                wallArray, self.parameters["flowDensity"], heightArray, self.parameters["preFlow"], self.parameters["terrain"])
+                self.layers["wall_array"],
+                self.parameters["flowDensity"],
+                heightArray,
+                self.parameters["preFlow"],
+                self.parameters["terrain"])
 
         # Set unstable walls and landslide rubble
         landslideList = self.aLandslideHasOccured(
-            wallArray, self.parameters["landslideDensity"])
+            self.layers["wall_array"], self.parameters["landslideDensity"])
 
         # Slimy Slug holes
-        self.aSlimySlugIsInvadingYourBase(wallArray, self.parameters["slugDensity"])
+        self.aSlimySlugIsInvadingYourBase(self.layers["wall_array"], self.parameters["slugDensity"])
 
         # Energy Crystal Seams
-        self.addSeams(wallArray, crystalArray,
+        self.addSeams(self.layers["wall_array"], self.layers["crystal_array"],
                       self.parameters["crystalSeamDensity"], 10)
 
         # Ore Seams
-        self.addSeams(wallArray, oreArray, self.parameters["oreSeamDensity"], 11)
+        self.addSeams(self.layers["wall_array"], self.layers["ore_array"], self.parameters["oreSeamDensity"], 11)
 
         # Recharge seams
-        self.addRechargeSeams(wallArray, self.parameters["rechargeSeamDensity"])
+        self.addRechargeSeams(self.layers["wall_array"], self.parameters["rechargeSeamDensity"])
 
         # Set the starting point
-        base = self.chooseBase(wallArray)
+        base = self.chooseBase(self.layers["wall_array"])
         if base == False:  # Make sure there is space to build
             return False
-        self.setBase(base[0], wallArray, heightArray)
+        self.setBase(base[0], self.layers["wall_array"], heightArray)
 
         # List undiscovered caverns
-        caveList = self.findCaves(wallArray, base[0])
+        caveList = self.findCaves(self.layers["wall_array"], base[0])
 
         # Finish up
 
         MMtext = self.convertToMM(
-            wallArray,
+            self.layers["wall_array"],
             caveList,
             self.parameters["biome"],
             heightArray,
-            crystalArray,
-            oreArray,
+            self.layers["crystal_array"],
+            self.layers["ore_array"],
             self.parameters["landslideInterval"],
             landslideList,
             self.parameters["flowInterval"],
@@ -262,7 +261,8 @@ class Mapgen:
 
     # Convert to Manic Miners file format
 
-    def convertToMM(self, walls,
+    def convertToMM(self,
+                    walls,
                     caveList,
                     biome,
                     height,
@@ -321,20 +321,21 @@ class Mapgen:
         }
 
         # Apply the conversion
+        converted_walls = self.createArray(len(walls), len(walls[0]), None)
         for i in range(len(walls)):
             for j in range(len(walls[0])):
-                walls[i][j] = conversion[walls[i][j]]
+                converted_walls[i][j] = conversion[walls[i][j]]
 
         # Hide undiscovered caverns
         for cave in caveList:
             for space in cave:
-                walls[space[0]][space[1]] = str(
-                    int(walls[space[0]][space[1]]) + 100)
+                converted_walls[space[0]][space[1]] = str(
+                    int(converted_walls[space[0]][space[1]]) + 100)
 
         # Add to the file
-        for i in range(len(walls)):
-            for j in range(len(walls[0])):
-                MMtext += walls[i][j] + ','
+        for i in range(len(converted_walls)):
+            for j in range(len(converted_walls[0])):
+                MMtext += converted_walls[i][j] + ','
             MMtext += '\n'
         MMtext += '}\n'
 
@@ -351,15 +352,15 @@ class Mapgen:
 
         # Crystals
         MMtext += 'crystals:\n'
-        for i in range(len(walls)):
-            for j in range(len(walls[0])):
+        for i in range(len(converted_walls)):
+            for j in range(len(converted_walls[0])):
                 MMtext += str(crystals[i][j]) + ','
             MMtext += '\n'
 
         # Ore
         MMtext += 'ore:\n'
-        for i in range(len(walls)):
-            for j in range(len(walls[0])):
+        for i in range(len(converted_walls)):
+            for j in range(len(converted_walls[0])):
                 MMtext += str(ore[i][j]) + ','
             MMtext += '\n'
         MMtext += '}\n'
@@ -384,10 +385,10 @@ class Mapgen:
             # X = chunk number
             # Y = row within chunk
             # Z = col within chunk
-            'Powerpaths=X=' + str((len(walls[0]) // 8) * (base[0][0] // 8) + (base[0][1] // 8)) +
+            'Powerpaths=X=' + str((len(converted_walls[0]) // 8) * (base[0][0] // 8) + (base[0][1] // 8)) +
             ' Y=' + str(base[0][0] % 8) +
             ' Z=' + str(base[0][1] % 8) +
-            '/X=' + str((len(walls[0]) // 8) * ((base[0][0] + 1) // 8) + (base[0][1] // 8)) +
+            '/X=' + str((len(converted_walls[0]) // 8) * ((base[0][0] + 1) // 8) + (base[0][1] // 8)) +
             ' Y=' + str((base[0][0] + 1) % 8) +
             ' Z=' + str(base[0][1] % 8) + '/\n'
         )

@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QDialog
+import random
+
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PyQt5 import QtGui
-from PyQt5.QtCore import Qt
 from PIL import Image, ImageDraw
 from PIL.ImageQt import ImageQt
 
@@ -12,15 +13,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
-        self.newMapButton.clicked.connect(self.generate_map)
+        self.newMapButton.clicked.connect(self.new_map)
         self.saveButton.clicked.connect(self.saveFile)
+
+        # Start the map generator
         self.map_generator = mapgen.Mapgen()
+
+        # Set up the inputs
+        self.map_size_slider.valueChanged.connect(self.update_map_size)
+        self.biome_combobox.addItems(['rock', 'ice', 'lava'])
+        self.biome_combobox.currentTextChanged.connect(self.update_biome)
+        self.solid_rock_slider.valueChanged.connect(self.update_solid_rock)
+        self.other_rock_slider.valueChanged.connect(self.update_other_rock)
+
+        # Set the input values
+        self.set_input_values()
+
         self.generate_map()
+
+    def set_input_values(self):
+        self.map_size_slider.setValue(self.map_generator.parameters['size'] / 8)
+        self.biome_combobox.setCurrentText(self.map_generator.parameters['biome'])
+        self.solid_rock_slider.setValue((self.map_generator.parameters['solidDensity'] - 0.2) / 0.004)
+        self.other_rock_slider.setValue((self.map_generator.parameters['wallDensity'] - 0.2) / 0.004)
 
     def generate_map(self):
         self.map_generator.mapgen()
         # print(self.map_generator.MMtext)
         self.displayPNG()
+
+    def new_map(self):
+        self.map_generator.init_parameters()
+        self.set_input_values()
+        self.map_generator.seed = random.random()
+        self.generate_map()
+
 
     # Save the output to a file
     def saveFile(self):
@@ -60,25 +87,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Color conversions
         colors = {
-            '1':   (24, 0, 59),  # Ground
-            '101': (24, 0, 59),  # Ground
-            '26':  (166, 72, 233),  # Dirt
-            '30':  (139, 43, 199),  # Loose Rock
-            '34':  (108, 10, 163),  # Hard Rock
-            '38':  (59, 0, 108),  # Solid Rock
-            '11':  (6, 45, 182),  # Water
-            '111': (6, 45, 182),  # Water
-            '6':   (239, 79, 16),  # Lava
-            '106': (239, 79, 16),  # Lava
-            '63':  (56, 44, 73),  # Landslide rubble
-            '163': (56, 44, 73),  # Landslide rubble
-            '12':  (150, 150, 0),  # Slimy Slug hole
-            '112': (150, 150, 0),  # Slimy Slug hole
-            '42':  (185, 255, 25),  # Energy Crystal Seam
-            '46':  (146, 62, 20),  # Ore Seam
-            '50':  (250, 255, 14),  # Recharge Seam
-            '14':  (190, 190, 190),  # Building power path
-            '114': (190, 190, 190),  # Building power path
+            0:   (24, 0, 59),  # Ground
+            1:  (166, 72, 233),  # Dirt
+            2:  (139, 43, 199),  # Loose Rock
+            3:  (108, 10, 163),  # Hard Rock
+            4:  (59, 0, 108),  # Solid Rock
+            6:  (6, 45, 182),  # Water
+            7:   (239, 79, 16),  # Lava
+            8:  (56, 44, 73),  # Landslide rubble
+            9:  (150, 150, 0),  # Slimy Slug hole
+            10:  (185, 255, 25),  # Energy Crystal Seam
+            11:  (146, 62, 20),  # Ore Seam
+            12:  (250, 255, 14),  # Recharge Seam
+            13:  (190, 190, 190),  # Building power path
         }
 
         # Draw the background
@@ -105,20 +126,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         i * scale + offset + 4,
                         j * scale + offset + 4,
                         i * scale + offset + 2],
-                        fill=colors["42"])
+                        fill=colors[10])
                 if oreArray[i][j] > 0:
                     draw.rectangle([
                         j * scale + offset + 5,
                         i * scale + offset + 4,
                         j * scale + offset + 7,
                         i * scale + offset + 2],
-                        fill=colors["46"])
+                        fill=colors[11])
 
         # Display the image
         image = ImageQt(img)
         pixmap = QtGui.QPixmap.fromImage(image).copy()
         self.map_preview.setPixmap(pixmap)
 
+    def update_map_size(self, value):
+        value *= 8
+        self.map_generator.parameters['size'] = value
+        self.generate_map()
+
+    def update_biome(self, value):
+        self.map_generator.parameters['biome'] = value
+
+    def update_solid_rock(self, value):
+        value = value * 0.004 + 0.2
+        self.map_generator.parameters['solidDensity'] = value
+        self.generate_map()
+
+    def update_other_rock(self, value):
+        value = value * 0.004 + 0.2
+        self.map_generator.parameters['wallDensity'] = value
+        self.generate_map()
 
 # Do the thing
 if __name__ == '__main__':
