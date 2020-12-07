@@ -31,12 +31,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.os_slider.valueChanged.connect(self.update_os)
         self.rs_slider.valueChanged.connect(self.update_rs)
 
+        # Set a lock to prevent updates
+        self.generator_locked = False
+
         # Set the input values
         self.set_input_values()
 
         self.generate_map()
 
     def set_input_values(self):
+
+        # Lock
+        self.generator_locked = True
+
+        # Update each input
         self.map_size_slider.setValue(self.map_generator.parameters['size'] / 8)
         self.biome_combobox.setCurrentText(self.map_generator.parameters['biome'])
         self.solid_rock_slider.setValue((self.map_generator.parameters['solidDensity'] - 0.2) / 0.004)
@@ -47,10 +55,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.os_slider.setValue(self.map_generator.parameters['oreSeamDensity'] / 0.006)
         self.rs_slider.setValue(self.map_generator.parameters['rechargeSeamDensity'] / 0.01)
 
+        # Unlock
+        self.generator_locked = False
+
     def generate_map(self):
-        self.map_generator.mapgen()
-        # print(self.map_generator.MMtext)
-        self.displayPNG()
+        if not self.generator_locked:
+            self.map_generator.mapgen()
+            # print(self.map_generator.MMtext)
+            self.displayPNG()
 
     def new_map(self):
         self.map_generator.init_parameters()
