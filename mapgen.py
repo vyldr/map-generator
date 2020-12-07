@@ -43,6 +43,20 @@ class Mapgen:
 
         # Load the seed
         random.seed(self.seed)
+        seeds = {
+            "solid_seed": random.random(),
+            "other_seed": random.random(),
+            "ore_seed": random.random(),
+            "crystal_seed": random.random(),
+            "height_seed": random.random(),
+            "slug_seed": random.random(),
+            "ecs_seed": random.random(),
+            "os_seed": random.random(),
+            "rs_seed": random.random(),
+            "erosion_seed": random.random(),
+            "landslide_seed": random.random(),
+            "base_seed": random.random(),
+        }
 
         # Set length and width
         if self.parameters["size"]:
@@ -56,19 +70,21 @@ class Mapgen:
             self.parameters["oxygen"] = self.parameters["length"] * self.parameters["width"] * 3
 
         # Create feature maps
-        solidArray = self.createArray(
+        self.layers["solid_array"] = self.createArray(
             self.parameters["length"], self.parameters["width"], -1)  # Solid rock
         self.layers["wall_array"] = self.createArray(
             self.parameters["length"], self.parameters["width"], -1)  # Other rock
 
         # Create the solid rock
-        self.randomize(solidArray, 1 - self.parameters["solidDensity"])
-        self.speleogenesis(solidArray)
-        self.cleanup(solidArray)
-        if self.fillExtra(solidArray) == False:  # This is a chance to test map sanity
+        random.seed(seeds["solid_seed"])
+        self.randomize(self.layers["solid_array"], 1 - self.parameters["solidDensity"])
+        self.speleogenesis(self.layers["solid_array"])
+        self.cleanup(self.layers["solid_array"])
+        if self.fillExtra(self.layers["solid_array"]) == False:  # This is a chance to test map sanity
             return False
 
         # Create the other rocks
+        random.seed(seeds["other_seed"])
         self.randomize(self.layers["wall_array"], 1 - self.parameters["wallDensity"])
         self.speleogenesis(self.layers["wall_array"])
         self.cleanup(self.layers["wall_array"])
@@ -77,10 +93,11 @@ class Mapgen:
         # Merge the permnent and temporary features
         for i in range(self.parameters["length"]):
             for j in range(self.parameters["width"]):
-                if solidArray[i][j] == -1:
+                if self.layers["solid_array"][i][j] == -1:
                     self.layers["wall_array"][i][j] = 4
 
         # Create ore
+        random.seed(seeds["ore_seed"])
         self.layers["ore_array"] = self.createArray(self.parameters["length"], self.parameters["width"], -1)
         self.randomize(self.layers["ore_array"], 1 - self.parameters["oreDensity"])
         self.speleogenesis(self.layers["ore_array"])
@@ -88,6 +105,7 @@ class Mapgen:
         self.details(self.layers["ore_array"], 4)
 
         # Create crystals
+        random.seed(seeds["crystal_seed"])
         self.layers["crystal_array"] = self.createArray(self.parameters["length"], self.parameters["width"], -1)
         self.randomize(self.layers["crystal_array"], 1 - self.parameters["crystalDensity"])
         self.speleogenesis(self.layers["crystal_array"])
@@ -95,11 +113,12 @@ class Mapgen:
         self.details(self.layers["crystal_array"], 5)
 
         # Creat a height map
-        heightArray = self.heightMap(
+        random.seed(seeds["height_seed"])
+        self.layers["height_array"] = self.heightMap(
             self.parameters["length"] + 1, self.parameters["width"] + 1, self.parameters["terrain"], self.parameters["smoothness"])
 
         # Flood the low areas
-        self.flood(self.layers["wall_array"], heightArray,
+        self.flood(self.layers["wall_array"], self.layers["height_array"],
                    self.parameters["floodLevel"], self.parameters["floodType"])
 
         # Organize the maps
@@ -109,7 +128,25 @@ class Mapgen:
                     self.layers["crystal_array"][i][j] = 0
                     self.layers["ore_array"][i][j] = 0
 
+        # Slimy Slug holes
+        random.seed(seeds["slug_seed"])
+        self.aSlimySlugIsInvadingYourBase(self.layers["wall_array"], self.parameters["slugDensity"])
+
+        # Energy Crystal Seams
+        random.seed(seeds["ecs_seed"])
+        self.addSeams(self.layers["wall_array"], self.layers["crystal_array"],
+                      self.parameters["crystalSeamDensity"], 10)
+
+        # Ore Seams
+        random.seed(seeds["os_seed"])
+        self.addSeams(self.layers["wall_array"], self.layers["ore_array"], self.parameters["oreSeamDensity"], 11)
+
+        # Recharge seams
+        random.seed(seeds["rs_seed"])
+        self.addRechargeSeams(self.layers["wall_array"], self.parameters["rechargeSeamDensity"])
+
         # Lava Flows / Erosion
+        random.seed(seeds["erosion_seed"])
         flowList = []
         if self.parameters["biome"] == 'lava':
             self.parameters["flowDensity"] *= 3
@@ -117,32 +154,21 @@ class Mapgen:
             flowList = self.createFlowList(
                 self.layers["wall_array"],
                 self.parameters["flowDensity"],
-                heightArray,
+                self.layers["height_array"],
                 self.parameters["preFlow"],
                 self.parameters["terrain"])
 
         # Set unstable walls and landslide rubble
+        random.seed(seeds["landslide_seed"])
         landslideList = self.aLandslideHasOccured(
             self.layers["wall_array"], self.parameters["landslideDensity"])
 
-        # Slimy Slug holes
-        self.aSlimySlugIsInvadingYourBase(self.layers["wall_array"], self.parameters["slugDensity"])
-
-        # Energy Crystal Seams
-        self.addSeams(self.layers["wall_array"], self.layers["crystal_array"],
-                      self.parameters["crystalSeamDensity"], 10)
-
-        # Ore Seams
-        self.addSeams(self.layers["wall_array"], self.layers["ore_array"], self.parameters["oreSeamDensity"], 11)
-
-        # Recharge seams
-        self.addRechargeSeams(self.layers["wall_array"], self.parameters["rechargeSeamDensity"])
-
         # Set the starting point
+        random.seed(seeds["base_seed"])
         base = self.chooseBase(self.layers["wall_array"])
         if base == False:  # Make sure there is space to build
             return False
-        self.setBase(base[0], self.layers["wall_array"], heightArray)
+        self.setBase(base[0], self.layers["wall_array"], self.layers["height_array"])
 
         # List undiscovered caverns
         caveList = self.findCaves(self.layers["wall_array"], base[0])
@@ -153,7 +179,7 @@ class Mapgen:
             self.layers["wall_array"],
             caveList,
             self.parameters["biome"],
-            heightArray,
+            self.layers["height_array"],
             self.layers["crystal_array"],
             self.layers["ore_array"],
             self.parameters["landslideInterval"],
@@ -174,14 +200,19 @@ class Mapgen:
     def addSeams(self, array, resourceArray, density, seam_type):
         for i in range(len(array)):
             for j in range(len(array[0])):
-                if resourceArray[i][j] > 2 and random.random() < density:
-                    array[i][j] = seam_type
+                if random.random() < density:
+                    if resourceArray[i][j] > 2:
+                        array[i][j] = seam_type
 
     # Add recharge seams in to replace solid rock
 
     def addRechargeSeams(self, array, density):
         for i in range(1, len(array) - 1):
             for j in range(1, len(array[0]) - 1):
+
+                # Unconditional random for more consistency
+                rand = random.random() < density
+
                 # Only if the space is already solid rock
                 if array[i][j] == 4:  # Solid rock
                     # Only if at least two opposite sides are solid rock
@@ -189,9 +220,12 @@ class Mapgen:
                           (array[i - 1][j] == 4)) or
                          ((array[i][j + 1] == 4) and
                           (array[i][j - 1] == 4))) and
-                        # Only if at least one side is or can become ground
-                            ((array[i + 1][j] < 4) or (array[i - 1][j] < 4) or (array[i][j + 1] < 4) or (array[i][j - 1] < 4))):
-                        if random.random() < density:
+                        # Only if at least one side is not solid rock
+                            ((array[i + 1][j] != 4) or
+                             (array[i - 1][j] != 4) or
+                             (array[i][j + 1] != 4) or
+                             (array[i][j - 1] != 4))):
+                        if rand:
                             array[i][j] = 12  # Recharge seam
 
     # A landslide has occured
@@ -221,8 +255,8 @@ class Mapgen:
         for i in range(len(array)):
             for j in range(len(array[0])):
                 # Randomly set Slimy Slug holes
-                if array[i][j] == 0:  # Ground
-                    if random.random() < slugDensity:
+                if random.random() < slugDensity:
+                    if array[i][j] == 0:  # Ground
                         array[i][j] = 9  # Slimy Slug hole
 
     # Choose a starting point
