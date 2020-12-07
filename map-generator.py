@@ -25,6 +25,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.biome_combobox.currentTextChanged.connect(self.update_biome)
         self.solid_rock_slider.valueChanged.connect(self.update_solid_rock)
         self.other_rock_slider.valueChanged.connect(self.update_other_rock)
+        self.energy_crystals_slider.valueChanged.connect(self.update_energy_crystals)
+        self.ore_slider.valueChanged.connect(self.update_ore)
+        self.ecs_slider.valueChanged.connect(self.update_ecs)
+        self.os_slider.valueChanged.connect(self.update_os)
+        self.rs_slider.valueChanged.connect(self.update_rs)
 
         # Set the input values
         self.set_input_values()
@@ -36,6 +41,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.biome_combobox.setCurrentText(self.map_generator.parameters['biome'])
         self.solid_rock_slider.setValue((self.map_generator.parameters['solidDensity'] - 0.2) / 0.004)
         self.other_rock_slider.setValue((self.map_generator.parameters['wallDensity'] - 0.2) / 0.004)
+        self.energy_crystals_slider.setValue(self.map_generator.parameters['crystalDensity'] / 0.008)
+        self.ore_slider.setValue(self.map_generator.parameters['oreDensity'] / 0.008)
+        self.ecs_slider.setValue(self.map_generator.parameters['crystalSeamDensity'] / 0.006)
+        self.os_slider.setValue(self.map_generator.parameters['oreSeamDensity'] / 0.006)
+        self.rs_slider.setValue(self.map_generator.parameters['rechargeSeamDensity'] / 0.01)
 
     def generate_map(self):
         self.map_generator.mapgen()
@@ -156,6 +166,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def update_other_rock(self, value):
         value = value * 0.004 + 0.2
         self.map_generator.parameters['wallDensity'] = value
+        self.generate_map()
+
+    def update_energy_crystals(self, value):
+        value = value * 0.008
+        self.map_generator.parameters['crystalDensity'] = value
+        self.generate_map()
+
+    def update_ore(self, value):
+        value = value * 0.008
+        self.map_generator.parameters['oreDensity'] = value
+        self.generate_map()
+
+    def update_ecs(self, value):
+        value = value * 0.006
+        self.map_generator.parameters['crystalSeamDensity'] = value
+        self.generate_map()
+
+    def update_os(self, value):
+        value = value * 0.006
+        self.map_generator.parameters['oreSeamDensity'] = value
+        self.generate_map()
+
+    def update_rs(self, value):
+        value = value * 0.01
+        self.map_generator.parameters['rechargeSeamDensity'] = value
         self.generate_map()
 
 # Do the thing
