@@ -80,8 +80,7 @@ class Mapgen:
         self.randomize(self.data["solid_array"], 1 - self.parameters["solidDensity"])
         self.speleogenesis(self.data["solid_array"])
         self.cleanup(self.data["solid_array"])
-        if self.fillExtra(self.data["solid_array"]) == False:  # This is a chance to test map sanity
-            return False
+        self.fillExtra(self.data["solid_array"])
 
         # Create the other rocks
         random.seed(seeds["other_seed"])
