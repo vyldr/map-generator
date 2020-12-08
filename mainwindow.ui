@@ -42,9 +42,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>-14</y>
+         <y>-279</y>
          <width>288</width>
-         <height>1244</height>
+         <height>1178</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -225,28 +225,14 @@
          <widget class="QComboBox" name="flood_type_combobox"/>
         </item>
         <item>
-         <widget class="QLabel" name="label_11">
+         <widget class="QLabel" name="erosion_sources_label">
           <property name="text">
            <string>Erosion Sources</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QSlider" name="horizontalSlider_17">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_12">
-          <property name="text">
-           <string>Erosion Speed</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSlider" name="horizontalSlider_18">
+         <widget class="QSlider" name="erosion_sources_slider">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>

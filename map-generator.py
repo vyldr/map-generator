@@ -30,6 +30,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ecs_slider.valueChanged.connect(self.update_ecs)
         self.os_slider.valueChanged.connect(self.update_os)
         self.rs_slider.valueChanged.connect(self.update_rs)
+        self.flood_level_slider.valueChanged.connect(self.update_flood_level)
+        self.flood_type_combobox.addItems(['water', 'lava'])
+        self.flood_type_combobox.currentTextChanged.connect(self.update_flood_type)
+        self.erosion_sources_slider.valueChanged.connect(self.update_erosion_sources)
 
         # Set a lock to prevent updates
         self.generator_locked = False
@@ -53,7 +57,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ore_slider.setValue(self.map_generator.parameters['oreDensity'] / 0.008)
         self.ecs_slider.setValue(self.map_generator.parameters['crystalSeamDensity'] / 0.006)
         self.os_slider.setValue(self.map_generator.parameters['oreSeamDensity'] / 0.006)
-        self.rs_slider.setValue(self.map_generator.parameters['rechargeSeamDensity'] / 0.01)
+        self.rs_slider.setValue(self.map_generator.parameters['rechargeSeamDensity'] / 0.003)
+        self.flood_level_slider.setValue(self.map_generator.parameters['floodLevel'] * 100)
+        self.flood_type_combobox.setCurrentText(self.map_generator.parameters['floodType'])
+        self.erosion_sources_slider.setValue(self.map_generator.parameters['flowDensity'] * 1000)
 
         # Unlock
         self.generator_locked = False
@@ -129,7 +136,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         offset,
                         self.map_preview.width() - offset,
                         self.map_preview.height() - offset],
-                        fill=(0, 0, 0))
+                       fill=(0, 0, 0))
 
         # Draw the tiles
         for i in range(len(wallArray)):
@@ -201,9 +208,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.generate_map()
 
     def update_rs(self, value):
-        value = value * 0.01
+        value = value * 0.003
         self.map_generator.parameters['rechargeSeamDensity'] = value
         self.generate_map()
+
+    def update_flood_level(self, value):
+        value = value / 100
+        self.map_generator.parameters['floodLevel'] = value
+        self.generate_map()
+
+    def update_flood_type(self, value):
+        self.map_generator.parameters['floodType'] = value
+        self.generate_map()
+
+    def update_erosion_sources(self, value):
+        value = value / 1000
+        self.map_generator.parameters['flowDensity'] = value
+        self.generate_map()
+
 
 # Do the thing
 if __name__ == '__main__':

@@ -148,9 +148,7 @@ class Mapgen:
         # Lava Flows / Erosion
         random.seed(seeds["erosion_seed"])
         flowList = []
-        if self.parameters["biome"] == 'lava':
-            self.parameters["flowDensity"] *= 3
-        if self.parameters["floodType"] == 7:  # Lava
+        if self.parameters["floodType"] == "lava":  # Lava
             flowList = self.createFlowList(
                 self.layers["wall_array"],
                 self.parameters["flowDensity"],
@@ -525,21 +523,16 @@ class Mapgen:
     def createFlowList(self, array, density, height, preFlow, terrain):
         flowArray = self.createArray(len(array), len(array[0]), -1)
         spillList = []
-        flowSourceList = []
         sources = []
 
         # Find places where lava flows are possible
         for i in range(len(array)):
             for j in range(len(array[0])):
-                if array[i][j] == 0:
-                    flowSourceList.append((i, j))  # Possible lava source
+                if random.random() < density:
+                    if array[i][j] == 0:
+                        sources.append((i, j))  # Possible lava source
                 if array[i][j] in range(4):
                     flowArray[i][j] = 0  # Possible spill zone
-
-        # Choose sources
-        for i in range(len(flowSourceList), 0, -1):
-            if random.random() < density:
-                sources.append(flowSourceList[i-1])
 
         # Start spilling from each source
         for source in sources:
@@ -597,7 +590,7 @@ class Mapgen:
                     (sources[j][0], sources[j][1] - 1),
                 ]
                 for space in adjacent:
-                    if array[space[0]][space[1]] == 0 and random.random() < 0.5:
+                    if array[space[0]][space[1]] == 0:
                         array[space[0]][space[1]] = 7  # Lava
                         sources.append(space)
 
