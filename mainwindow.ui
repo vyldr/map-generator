@@ -313,9 +313,16 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QPushButton" name="newMapButton">
+         <widget class="QPushButton" name="randomize_button">
           <property name="text">
-           <string>New Map</string>
+           <string>Randomize</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="generate_button">
+          <property name="text">
+           <string>Generate</string>
           </property>
          </widget>
         </item>

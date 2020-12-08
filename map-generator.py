@@ -13,7 +13,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
-        self.newMapButton.clicked.connect(self.new_map)
+        self.randomize_button.clicked.connect(self.randomize_input)
+        self.generate_button.clicked.connect(self.new_map)
         self.save_button.clicked.connect(self.saveFile)
 
         # Start the map generator
@@ -82,12 +83,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.save_button.setEnabled(False)
                 self.save_button.setToolTip('Can\'t save maps with no tool store')
 
-    def new_map(self):
+    def randomize_input(self):
+        size = self.map_generator.parameters['size']
         self.map_generator.init_parameters()
+        self.map_generator.parameters['size'] = size
         self.set_input_values()
+        self.new_map()
+
+    def new_map(self):
         self.map_generator.seed = random.random()
         self.generate_map()
-
 
     # Save the output to a file
     def saveFile(self):
