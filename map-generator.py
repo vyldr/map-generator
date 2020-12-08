@@ -34,6 +34,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.flood_type_combobox.addItems(['water', 'lava'])
         self.flood_type_combobox.currentTextChanged.connect(self.update_flood_type)
         self.erosion_sources_slider.valueChanged.connect(self.update_erosion_sources)
+        self.landslide_sources_slider.valueChanged.connect(self.update_landslide_sources)
+        self.slugs_slider.valueChanged.connect(self.update_slugs)
 
         # Set a lock to prevent updates
         self.generator_locked = False
@@ -61,6 +63,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.flood_level_slider.setValue(self.map_generator.parameters['floodLevel'] * 100)
         self.flood_type_combobox.setCurrentText(self.map_generator.parameters['floodType'])
         self.erosion_sources_slider.setValue(self.map_generator.parameters['flowDensity'] * 1000)
+        self.landslide_sources_slider.setValue(self.map_generator.parameters['landslideDensity'] / 0.004)
+        self.slugs_slider.setValue(self.map_generator.parameters['slugDensity'] / 0.001)
 
         # Unlock
         self.generator_locked = False
@@ -224,6 +228,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def update_erosion_sources(self, value):
         value = value / 1000
         self.map_generator.parameters['flowDensity'] = value
+        self.generate_map()
+
+    def update_landslide_sources(self, value):
+        value = value * 0.004
+        self.map_generator.parameters['landslideDensity'] = value
+        self.generate_map()
+
+    def update_slugs(self, value):
+        value = value * 0.001
+        self.map_generator.parameters['slugDensity'] = value
         self.generate_map()
 
 
