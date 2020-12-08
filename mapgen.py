@@ -37,7 +37,7 @@ class Mapgen:
     def __init__(self):
         self.seed = random.random()
         self.init_parameters()
-        self.layers = {}
+        self.data = {}
 
     def mapgen(self):
 
@@ -70,127 +70,105 @@ class Mapgen:
             self.parameters["oxygen"] = self.parameters["length"] * self.parameters["width"] * 3
 
         # Create feature maps
-        self.layers["solid_array"] = self.createArray(
+        self.data["solid_array"] = self.createArray(
             self.parameters["length"], self.parameters["width"], -1)  # Solid rock
-        self.layers["wall_array"] = self.createArray(
+        self.data["wall_array"] = self.createArray(
             self.parameters["length"], self.parameters["width"], -1)  # Other rock
 
         # Create the solid rock
         random.seed(seeds["solid_seed"])
-        self.randomize(self.layers["solid_array"], 1 - self.parameters["solidDensity"])
-        self.speleogenesis(self.layers["solid_array"])
-        self.cleanup(self.layers["solid_array"])
-        if self.fillExtra(self.layers["solid_array"]) == False:  # This is a chance to test map sanity
+        self.randomize(self.data["solid_array"], 1 - self.parameters["solidDensity"])
+        self.speleogenesis(self.data["solid_array"])
+        self.cleanup(self.data["solid_array"])
+        if self.fillExtra(self.data["solid_array"]) == False:  # This is a chance to test map sanity
             return False
 
         # Create the other rocks
         random.seed(seeds["other_seed"])
-        self.randomize(self.layers["wall_array"], 1 - self.parameters["wallDensity"])
-        self.speleogenesis(self.layers["wall_array"])
-        self.cleanup(self.layers["wall_array"])
-        self.details(self.layers["wall_array"], 3)
+        self.randomize(self.data["wall_array"], 1 - self.parameters["wallDensity"])
+        self.speleogenesis(self.data["wall_array"])
+        self.cleanup(self.data["wall_array"])
+        self.details(self.data["wall_array"], 3)
 
         # Merge the permnent and temporary features
         for i in range(self.parameters["length"]):
             for j in range(self.parameters["width"]):
-                if self.layers["solid_array"][i][j] == -1:
-                    self.layers["wall_array"][i][j] = 4
+                if self.data["solid_array"][i][j] == -1:
+                    self.data["wall_array"][i][j] = 4
 
         # Create ore
         random.seed(seeds["ore_seed"])
-        self.layers["ore_array"] = self.createArray(self.parameters["length"], self.parameters["width"], -1)
-        self.randomize(self.layers["ore_array"], 1 - self.parameters["oreDensity"])
-        self.speleogenesis(self.layers["ore_array"])
-        self.cleanup(self.layers["ore_array"])
-        self.details(self.layers["ore_array"], 4)
+        self.data["ore_array"] = self.createArray(self.parameters["length"], self.parameters["width"], -1)
+        self.randomize(self.data["ore_array"], 1 - self.parameters["oreDensity"])
+        self.speleogenesis(self.data["ore_array"])
+        self.cleanup(self.data["ore_array"])
+        self.details(self.data["ore_array"], 4)
 
         # Create crystals
         random.seed(seeds["crystal_seed"])
-        self.layers["crystal_array"] = self.createArray(self.parameters["length"], self.parameters["width"], -1)
-        self.randomize(self.layers["crystal_array"], 1 - self.parameters["crystalDensity"])
-        self.speleogenesis(self.layers["crystal_array"])
-        self.cleanup(self.layers["crystal_array"])
-        self.details(self.layers["crystal_array"], 5)
+        self.data["crystal_array"] = self.createArray(self.parameters["length"], self.parameters["width"], -1)
+        self.randomize(self.data["crystal_array"], 1 - self.parameters["crystalDensity"])
+        self.speleogenesis(self.data["crystal_array"])
+        self.cleanup(self.data["crystal_array"])
+        self.details(self.data["crystal_array"], 5)
 
         # Creat a height map
         random.seed(seeds["height_seed"])
-        self.layers["height_array"] = self.heightMap(
+        self.data["height_array"] = self.heightMap(
             self.parameters["length"] + 1, self.parameters["width"] + 1, self.parameters["terrain"], self.parameters["smoothness"])
 
         # Flood the low areas
-        self.flood(self.layers["wall_array"], self.layers["height_array"],
+        self.flood(self.data["wall_array"], self.data["height_array"],
                    self.parameters["floodLevel"], self.parameters["floodType"])
 
         # Organize the maps
         for i in range(self.parameters["length"]):
             for j in range(self.parameters["width"]):
-                if self.layers["wall_array"][i][j] not in range(1, 4):
-                    self.layers["crystal_array"][i][j] = 0
-                    self.layers["ore_array"][i][j] = 0
+                if self.data["wall_array"][i][j] not in range(1, 4):
+                    self.data["crystal_array"][i][j] = 0
+                    self.data["ore_array"][i][j] = 0
 
         # Slimy Slug holes
         random.seed(seeds["slug_seed"])
-        self.aSlimySlugIsInvadingYourBase(self.layers["wall_array"], self.parameters["slugDensity"])
+        self.aSlimySlugIsInvadingYourBase(self.data["wall_array"], self.parameters["slugDensity"])
 
         # Energy Crystal Seams
         random.seed(seeds["ecs_seed"])
-        self.addSeams(self.layers["wall_array"], self.layers["crystal_array"],
+        self.addSeams(self.data["wall_array"], self.data["crystal_array"],
                       self.parameters["crystalSeamDensity"], 10)
 
         # Ore Seams
         random.seed(seeds["os_seed"])
-        self.addSeams(self.layers["wall_array"], self.layers["ore_array"], self.parameters["oreSeamDensity"], 11)
+        self.addSeams(self.data["wall_array"], self.data["ore_array"], self.parameters["oreSeamDensity"], 11)
 
         # Recharge seams
         random.seed(seeds["rs_seed"])
-        self.addRechargeSeams(self.layers["wall_array"], self.parameters["rechargeSeamDensity"])
+        self.addRechargeSeams(self.data["wall_array"], self.parameters["rechargeSeamDensity"])
 
         # Lava Flows / Erosion
         random.seed(seeds["erosion_seed"])
-        flowList = []
+        self.data["flow_list"] = []
         if self.parameters["floodType"] == "lava":  # Lava
-            flowList = self.createFlowList(
-                self.layers["wall_array"],
+            self.data["flow_list"] = self.createFlowList(
+                self.data["wall_array"],
                 self.parameters["flowDensity"],
-                self.layers["height_array"],
+                self.data["height_array"],
                 self.parameters["preFlow"],
                 self.parameters["terrain"])
 
         # Set unstable walls and landslide rubble
         random.seed(seeds["landslide_seed"])
-        landslideList = self.aLandslideHasOccured(
-            self.layers["wall_array"], self.parameters["landslideDensity"])
+        self.data["landslide_list"] = self.aLandslideHasOccured(
+            self.data["wall_array"], self.parameters["landslideDensity"])
 
         # Set the starting point
         random.seed(seeds["base_seed"])
-        base = self.chooseBase(self.layers["wall_array"])
-        if base == False:  # Make sure there is space to build
+        self.data["base"] = self.chooseBase(self.data["wall_array"])
+        if not self.data["base"]:  # Make sure there is space to build
             return False
-        self.setBase(base[0], self.layers["wall_array"], self.layers["height_array"])
+        self.setBase(self.data["base"], self.data["wall_array"], self.data["height_array"])
 
-        # List undiscovered caverns
-        caveList = self.findCaves(self.layers["wall_array"], base[0])
-
-        # Finish up
-
-        MMtext = self.convertToMM(
-            self.layers["wall_array"],
-            caveList,
-            self.parameters["biome"],
-            self.layers["height_array"],
-            self.layers["crystal_array"],
-            self.layers["ore_array"],
-            self.parameters["landslideInterval"],
-            landslideList,
-            self.parameters["flowInterval"],
-            flowList,
-            base,
-            self.parameters["oxygen"],
-            self.parameters["name"],
-            self.parameters,
-        )
-
-        self.MMtext = MMtext
+        # Finally done
         return True
 
     # Add Energy Crystal and Ore seams
@@ -276,7 +254,7 @@ class Mapgen:
             return False
 
         # Choose one  TODO: Maybe add multiple bases or larger bases
-        return [possibleBaseList[random.randint(0, len(possibleBaseList) - 1)]]
+        return [possibleBaseList[random.randint(0, len(possibleBaseList) - 1)]][0]
 
     # Clean up small map features
 
@@ -293,43 +271,28 @@ class Mapgen:
 
     # Convert to Manic Miners file format
 
-    def convertToMM(self,
-                    walls,
-                    caveList,
-                    biome,
-                    height,
-                    crystals,
-                    ore,
-                    landslideInterval,
-                    landslideList,
-                    flowInterval,
-                    flowList,
-                    base,
-                    oxygen,
-                    name,
-                    params,
-                    ):
+    def mm_text(self):
 
         # Count all the crystals we can reach
         crystalCount = self.countAccessibleCrystals(
-            walls, base[0], crystals, False)
+            self.data["wall_array"], self.data["base"], self.data["ore_array"], False)
         if crystalCount >= 14:  # More than enough crystals to get vehicles
             crystalCount = self.countAccessibleCrystals(
-                walls, base[0], crystals, True)
+                self.data["wall_array"], self.data["base"], self.data["ore_array"], True)
 
         # Basic info
         MMtext = (
             'info{\n' +
-            'rowcount:' + str(len(walls)) + '\n' +
-            'colcount:' + str(len(walls[0])) + '\n' +
-            'camerapos:Translation: X=' + str(base[0][1] * 300 + 300) +
-            ' Y=' + str(base[0][0] * 300 + 300) +
-            ' Z=' + str(height[base[0][0]][base[0][1]]) +
+            'rowcount:' + str(len(self.data["wall_array"])) + '\n' +
+            'colcount:' + str(len(self.data["wall_array"][0])) + '\n' +
+            'camerapos:Translation: X=' + str(self.data["base"][1] * 300 + 300) +
+            ' Y=' + str(self.data["base"][0] * 300 + 300) +
+            ' Z=' + str(self.data["height_array"][self.data["base"][0]][self.data["base"][1]]) +
             ' Rotation: P=44.999992 Y=180.000000 R=0.000000 Scale X=1.000 Y=1.000 Z=1.000\n' +
-            'biome:' + biome + '\n' +
+            'biome:' + self.parameters["biome"] + '\n' +
             'creator:Map Generator for Manic Miners\n' +
-            (('oxygen:' + str(oxygen) + '/' + str(oxygen) + '\n') if oxygen else '') +
-            'levelname:' + name + '\n' +
+            (('oxygen:' + str(self.parameters["oxygen"]) + '/' + str(self.parameters["oxygen"]) + '\n') if self.parameters["oxygen"] else '') +
+            'levelname:' + self.parameters["name"] + '\n' +
             'erosioninitialwaittime:10\n' +
             '}\n'
         )
@@ -353,10 +316,13 @@ class Mapgen:
         }
 
         # Apply the conversion
-        converted_walls = self.createArray(len(walls), len(walls[0]), None)
-        for i in range(len(walls)):
-            for j in range(len(walls[0])):
-                converted_walls[i][j] = conversion[walls[i][j]]
+        converted_walls = self.createArray(len(self.data["wall_array"]), len(self.data["wall_array"][0]), None)
+        for i in range(len(self.data["wall_array"])):
+            for j in range(len(self.data["wall_array"][0])):
+                converted_walls[i][j] = conversion[self.data["wall_array"][i][j]]
+
+        # List undiscovered caverns
+        caveList = self.findCaves(self.data["wall_array"], self.data["base"])
 
         # Hide undiscovered caverns
         for cave in caveList:
@@ -373,9 +339,9 @@ class Mapgen:
 
         # Add the heights
         MMtext += 'height{\n'
-        for i in range(len(height)):
-            for j in range(len(height[0])):
-                MMtext += str(height[i][j]) + ','
+        for i in range(len(self.data["height_array"])):
+            for j in range(len(self.data["height_array"][0])):
+                MMtext += str(self.data["height_array"][i][j]) + ','
             MMtext += '\n'
         MMtext += '}\n'
 
@@ -386,14 +352,14 @@ class Mapgen:
         MMtext += 'crystals:\n'
         for i in range(len(converted_walls)):
             for j in range(len(converted_walls[0])):
-                MMtext += str(crystals[i][j]) + ','
+                MMtext += str(self.data["ore_array"][i][j]) + ','
             MMtext += '\n'
 
         # Ore
         MMtext += 'ore:\n'
         for i in range(len(converted_walls)):
             for j in range(len(converted_walls[0])):
-                MMtext += str(ore[i][j]) + ','
+                MMtext += str(self.data["ore_array"][i][j]) + ','
             MMtext += '\n'
         MMtext += '}\n'
 
@@ -407,44 +373,44 @@ class Mapgen:
         MMtext += 'buildings{\n'
         MMtext += (
             'BuildingToolStore_C\n' +
-            'Translation: X=' + str(base[0][1] * 300 + 150.000) +
-            ' Y=' + str(base[0][0] * 300 + 150.000) +
-            ' Z=' + str(height[base[0][0]][base[0][1]] + (50 if 'udts' in params else 0)) +
-            ' Rotation: P=' + ('180' if 'udts' in params else '0') + '.000000 Y=89.999992 R=0.000000 Scale X=1.000 Y=1.000 Z=1.000\n' +
+            'Translation: X=' + str(self.data["base"][1] * 300 + 150.000) +
+            ' Y=' + str(self.data["base"][0] * 300 + 150.000) +
+            ' Z=' + str(self.data["height_array"][self.data["base"][0]][self.data["base"][1]] + (50 if 'udts' in self.parameters else 0)) +
+            ' Rotation: P=' + ('180' if 'udts' in self.parameters else '0') + '.000000 Y=89.999992 R=0.000000 Scale X=1.000 Y=1.000 Z=1.000\n' +
             'Level=1\n' +
             'Teleport=True\n' +
             'Health=MAX\n' +
             # X = chunk number
             # Y = row within chunk
             # Z = col within chunk
-            'Powerpaths=X=' + str((len(converted_walls[0]) // 8) * (base[0][0] // 8) + (base[0][1] // 8)) +
-            ' Y=' + str(base[0][0] % 8) +
-            ' Z=' + str(base[0][1] % 8) +
-            '/X=' + str((len(converted_walls[0]) // 8) * ((base[0][0] + 1) // 8) + (base[0][1] // 8)) +
-            ' Y=' + str((base[0][0] + 1) % 8) +
-            ' Z=' + str(base[0][1] % 8) + '/\n'
+            'Powerpaths=X=' + str((len(converted_walls[0]) // 8) * (self.data["base"][0] // 8) + (self.data["base"][1] // 8)) +
+            ' Y=' + str(self.data["base"][0] % 8) +
+            ' Z=' + str(self.data["base"][1] % 8) +
+            '/X=' + str((len(converted_walls[0]) // 8) * ((self.data["base"][0] + 1) // 8) + (self.data["base"][1] // 8)) +
+            ' Y=' + str((self.data["base"][0] + 1) % 8) +
+            ' Z=' + str(self.data["base"][1] % 8) + '/\n'
         )
         MMtext += '}\n'
 
         # A landslide has occured
         MMtext += 'landslideFrequency{\n'
-        for i in range(1, len(landslideList) + 1):
-            if len(landslideList[i - 1]):
-                MMtext += str(i * landslideInterval) + ':'
-            for space in landslideList[i - 1]:
+        for i in range(1, len(self.data["landslide_list"]) + 1):
+            if len(self.data["landslide_list"][i - 1]):
+                MMtext += str(i * self.parameters["landslideInterval"]) + ':'
+            for space in self.data["landslide_list"][i - 1]:
                 MMtext += str(space[1]) + ',' + str(space[0]) + '/'
-            if len(landslideList[i - 1]):
+            if len(self.data["landslide_list"][i - 1]):
                 MMtext += '\n'
         MMtext += '}\n'
 
         # Erosion
         MMtext += 'lavaspread{\n'
-        for i in range(1, len(flowList) + 1):
-            if len(flowList[i - 1]):
-                MMtext += str(i * flowInterval) + ':'
-            for space in flowList[i - 1]:
+        for i in range(1, len(self.data["flow_list"]) + 1):
+            if len(self.data["flow_list"][i - 1]):
+                MMtext += str(i * self.parameters["flowInterval"]) + ':'
+            for space in self.data["flow_list"][i - 1]:
                 MMtext += str(space[1]) + ',' + str(space[0]) + '/'
-            if len(flowList[i - 1]):
+            if len(self.data["flow_list"][i - 1]):
                 MMtext += '\n'
         MMtext += '}\n'
 

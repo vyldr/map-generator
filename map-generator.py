@@ -14,7 +14,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
         self.newMapButton.clicked.connect(self.new_map)
-        self.saveButton.clicked.connect(self.saveFile)
+        self.save_button.clicked.connect(self.saveFile)
 
         # Start the map generator
         self.map_generator = mapgen.Mapgen()
@@ -71,9 +71,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def generate_map(self):
         if not self.generator_locked:
-            self.map_generator.mapgen()
-            # print(self.map_generator.MMtext)
+            success = self.map_generator.mapgen()
             self.displayPNG()
+
+            # Enable/disable the save button
+            if success:
+                self.save_button.setEnabled(True)
+                self.save_button.setToolTip('')
+            else:
+                self.save_button.setEnabled(False)
+                self.save_button.setToolTip('Can\'t save maps with no tool store')
 
     def new_map(self):
         self.map_generator.init_parameters()
@@ -96,18 +103,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # Save the file
             filename = save_dialog.selectedFiles()[0]
             output_file = open(filename, 'w')
-            output_file.write(self.map_generator.MMtext)
+            output_file.write(self.map_generator.mm_text())
             output_file.close()
-            print("Saved to:", filename)
-            print()
 
     # Display the map as a PNG
     def displayPNG(self):
 
         # Layers
-        wallArray = self.map_generator.layers["wall_array"]
-        crystalArray = self.map_generator.layers["crystal_array"]
-        oreArray = self.map_generator.layers["ore_array"]
+        wallArray = self.map_generator.data["wall_array"]
+        crystalArray = self.map_generator.data["crystal_array"]
+        oreArray = self.map_generator.data["ore_array"]
 
         # Create the image
         scale = self.map_preview.width() // len(wallArray)
