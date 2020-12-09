@@ -2,6 +2,26 @@
 
 This program creates random maps to be used in [Manic Miners](https://manicminers.baraklava.com/).  It is available as a Python script or a Windows executable.
 
+# Version 2.0
+
+This version has been updated to a GUI with sliders that control different parameters and a live preview of the generated map.
+
+## How to use
+
+Start the program the same as the previous version:
+
+> `python map-generator.py`
+
+or
+
+> `map-generator.exe`
+
+This should open the map generator window.  The inputs along the side control different features of the map.  The `Randomize` button will choose random values for the input parameters.  The `Generate` button will generate a different map using the current input parameters.  The `Save` button will save the current map.
+
+# Version 1.2
+
+This version runs on the command line and gives you very precise control over the various parameters.
+
 ## How to use
 
 Simply run either the exe or the Python script and the map will automatically be created and saved as `Untitled.dat`.
