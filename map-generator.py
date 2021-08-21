@@ -52,20 +52,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.generator_locked = True
 
         # Update each input
-        self.map_size_slider.setValue(self.map_generator.parameters['size'] / 8)
+        self.map_size_slider.setValue(
+            self.map_generator.parameters['size'] // 8)
         self.biome_combobox.setCurrentText(self.map_generator.parameters['biome'])
-        self.solid_rock_slider.setValue((self.map_generator.parameters['solidDensity'] - 0.2) / 0.004)
-        self.other_rock_slider.setValue((self.map_generator.parameters['wallDensity'] - 0.2) / 0.004)
-        self.energy_crystals_slider.setValue(self.map_generator.parameters['crystalDensity'] / 0.008)
-        self.ore_slider.setValue(self.map_generator.parameters['oreDensity'] / 0.008)
-        self.ecs_slider.setValue(self.map_generator.parameters['crystalSeamDensity'] / 0.006)
-        self.os_slider.setValue(self.map_generator.parameters['oreSeamDensity'] / 0.006)
-        self.rs_slider.setValue(self.map_generator.parameters['rechargeSeamDensity'] / 0.003)
-        self.flood_level_slider.setValue(self.map_generator.parameters['floodLevel'] * 100)
+        self.solid_rock_slider.setValue(
+            int((self.map_generator.parameters['solidDensity'] - 0.2) / 0.004))
+        self.other_rock_slider.setValue(
+            int((self.map_generator.parameters['wallDensity'] - 0.2) / 0.004))
+        self.energy_crystals_slider.setValue(
+            int(self.map_generator.parameters['crystalDensity'] / 0.008))
+        self.ore_slider.setValue(
+            int(self.map_generator.parameters['oreDensity'] / 0.008))
+        self.ecs_slider.setValue(
+            int(self.map_generator.parameters['crystalSeamDensity'] / 0.006))
+        self.os_slider.setValue(
+            int(self.map_generator.parameters['oreSeamDensity'] / 0.006))
+        self.rs_slider.setValue(
+            int(self.map_generator.parameters['rechargeSeamDensity'] / 0.003))
+        self.flood_level_slider.setValue(
+            int(self.map_generator.parameters['floodLevel'] * 100))
         self.flood_type_combobox.setCurrentText(self.map_generator.parameters['floodType'])
-        self.erosion_sources_slider.setValue(self.map_generator.parameters['flowDensity'] * 1000)
-        self.landslide_sources_slider.setValue(self.map_generator.parameters['landslideDensity'] / 0.004)
-        self.slugs_slider.setValue(self.map_generator.parameters['slugDensity'] / 0.001)
+        self.erosion_sources_slider.setValue(
+            int(self.map_generator.parameters['flowDensity'] * 1000))
+        self.landslide_sources_slider.setValue(
+            int(self.map_generator.parameters['landslideDensity'] / 0.004))
+        self.slugs_slider.setValue(
+            int(self.map_generator.parameters['slugDensity'] / 0.001))
 
         # Unlock
         self.generator_locked = False
