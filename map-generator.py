@@ -2,7 +2,7 @@ import random
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PyQt5 import QtGui
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
 from PIL.ImageQt import ImageQt
 
 from MainWindow import Ui_MainWindow
@@ -19,6 +19,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Start the map generator
         self.map_generator = mapgen.Mapgen()
+
+        # Set up resizing the map preview
+        self.map_preview.resizeEvent = self.displayPNG
 
         # Set up the inputs
         self.map_size_slider.valueChanged.connect(self.update_map_size)
@@ -124,7 +127,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             output_file.close()
 
     # Display the map as a PNG
-    def displayPNG(self):
+    def displayPNG(self, e=None):
+
+        width = self.map_preview.width()
+        height = self.map_preview.height()
+        square_size = min(width, height)
 
         # Layers
         wallArray = self.map_generator.data["wall_array"]
@@ -132,11 +139,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         oreArray = self.map_generator.data["ore_array"]
 
         # Create the image
-        scale = self.map_preview.width() // len(wallArray)
-        offset = self.map_preview.width() % len(wallArray) // 2
+        scale = square_size // len(wallArray)
+        offset = square_size % len(wallArray) // 2
         img = Image.new('RGBA',
-                        (self.map_preview.width(),
-                         self.map_preview.height()),
+                        (square_size,
+                         square_size),
                         color=(0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
 
@@ -160,8 +167,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Draw the background
         draw.rectangle([offset,
                         offset,
-                        self.map_preview.width() - offset,
-                        self.map_preview.height() - offset],
+                        square_size - offset,
+                        square_size - offset],
                        fill=(0, 0, 0))
 
         # Draw the tiles
@@ -189,6 +196,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         j * scale + offset + 7,
                         i * scale + offset + 2],
                         fill=colors[11])
+
+        # Center the image
+        border_x = (width - square_size) // 2
+        border_y = (height - square_size) // 2
+        img = ImageOps.expand(img, border=(
+            border_x, border_y, border_x, border_y), fill=(0, 0, 0, 0))
 
         # Display the image
         image = ImageQt(img)
