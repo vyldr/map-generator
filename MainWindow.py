@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(820, 552)
+        MainWindow.resize(820, 558)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -151,6 +151,9 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.view_combobox = QtWidgets.QComboBox(self.centralwidget)
+        self.view_combobox.setObjectName("view_combobox")
+        self.horizontalLayout_2.addWidget(self.view_combobox)
         self.randomize_button = QtWidgets.QPushButton(self.centralwidget)
         self.randomize_button.setObjectName("randomize_button")
         self.horizontalLayout_2.addWidget(self.randomize_button)

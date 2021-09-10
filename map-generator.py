@@ -13,6 +13,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
+        self.view_combobox.addItems(['Map view', 'Height view'])
+        self.view_combobox.currentTextChanged.connect(self.updateView)
         self.randomize_button.clicked.connect(self.randomize_input)
         self.generate_button.clicked.connect(self.new_map)
         self.save_button.clicked.connect(self.saveFile)
@@ -21,7 +23,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.map_generator = mapgen.Mapgen()
 
         # Set up resizing the map preview
-        self.map_preview.resizeEvent = self.displayPNG
+        self.map_preview.resizeEvent = self.displayPreview
+
+        # Which preview are we showing?
+        self.view = 'Map view'
 
         # Set up the inputs
         self.map_size_slider.valueChanged.connect(self.update_map_size)
@@ -88,7 +93,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def generate_map(self):
         if not self.generator_locked:
             success = self.map_generator.mapgen()
-            self.displayPNG()
+            self.displayPreview()
 
             # Enable/disable the save button
             if success:
@@ -126,8 +131,85 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             output_file.write(self.map_generator.mm_text())
             output_file.close()
 
-    # Display the map as a PNG
-    def displayPNG(self, e=None):
+    def updateView(self, value):
+        self.view = value
+        self.displayPreview()
+
+    # Display a preview in the preview window
+
+    def displayPreview(self, e=None):
+        if self.view == 'Map view':
+            self.displayPreviewMap()
+
+        if self.view == 'Height view':
+            self.displayPreviewHeight()
+
+    # Display a preview of the heightmap
+
+    def displayPreviewHeight(self):
+        width = self.map_preview.width()
+        height = self.map_preview.height()
+        square_size = min(width, height)
+
+        # Layers
+        heightArray = self.map_generator.data["height_array"]
+
+        # Find the range of heights
+        lowest = heightArray[0][0]
+        highest = heightArray[0][0]
+
+        for i in range(len(heightArray) * len(heightArray[0])):
+            lowest = min(
+                lowest, heightArray[i // len(heightArray)][i % len(heightArray[0])])
+            highest = max(
+                highest, heightArray[i // len(heightArray)][i % len(heightArray[0])])
+
+        highest = max(highest, abs(lowest))
+        lowest = -highest
+
+        heightRange = highest - lowest
+
+        # Create the image
+        scale = square_size // len(heightArray)
+        offset = square_size % len(heightArray) // 2
+        img = Image.new('RGBA',
+                        (square_size,
+                         square_size),
+                        color=(0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+
+        # Draw the background
+        draw.rectangle([offset,
+                        offset,
+                        square_size - offset,
+                        square_size - offset],
+                       fill=(0, 0, 0))
+
+        # Draw the tiles
+        for i in range(len(heightArray)):
+            for j in range(len(heightArray[0])):
+                # Draw the tile
+                draw.rectangle([j * scale + offset + 1,
+                                i * scale + offset + 1,
+                                j * scale + offset + (scale - 1),
+                                i * scale + offset + (scale - 1)],
+                               # low = blue, high = red
+                               fill='hsl(' + str(250-(heightArray[i][j] - lowest) / heightRange * 250) + ', 100%, 50%)')
+                #    fill=(0, int((heightArray[i][j] - lowest) / heightRange * 256), 0))
+
+        # Center the image
+        border_x = (width - square_size) // 2
+        border_y = (height - square_size) // 2
+        img = ImageOps.expand(img, border=(
+            border_x, border_y, border_x, border_y), fill=(0, 0, 0, 0))
+
+        # Display the image
+        image = ImageQt(img)
+        pixmap = QtGui.QPixmap.fromImage(image).copy()
+        self.map_preview.setPixmap(pixmap)
+
+    # Display a preview of the wall/floor tiles and resources
+    def displayPreviewMap(self):
 
         width = self.map_preview.width()
         height = self.map_preview.height()

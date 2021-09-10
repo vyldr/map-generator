@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>820</width>
-    <height>552</height>
+    <height>558</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -286,6 +286,9 @@
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QComboBox" name="view_combobox"/>
+        </item>
         <item>
          <widget class="QPushButton" name="randomize_button">
           <property name="text">
