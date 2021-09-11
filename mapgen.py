@@ -241,19 +241,24 @@ class Mapgen:
         possibleBaseList = []
         for i in range(1, len(array) - 2):
             for j in range(1, len(array[0]) - 2):
+                # Choose a random value as the location preference
+                preference = random.random()
                 # Check for a 2x2 ground section to build on
                 if ((array[i][j] == 0) and
                     (array[i + 1][j] == 0) and
                     (array[i][j + 1] == 0) and
                         (array[i + 1][j + 1] == 0)):
-                    possibleBaseList.append((i, j))
+                    possibleBaseList.append((i, j, preference))
 
         # Make sure there is somewhere to build
         if len(possibleBaseList) == 0:
             return False
 
+        # Sort by preference
+        possibleBaseList.sort(key=lambda x: x[2])
+
         # Choose one  TODO: Maybe add multiple bases or larger bases
-        return [possibleBaseList[random.randint(0, len(possibleBaseList) - 1)]][0]
+        return (possibleBaseList[0][0], possibleBaseList[0][1])
 
     # Clean up small map features
 
