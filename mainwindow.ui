@@ -44,7 +44,7 @@
          <x>0</x>
          <y>0</y>
          <width>300</width>
-         <height>637</height>
+         <height>689</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -66,6 +66,16 @@
         </size>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QLabel" name="seed_label">
+          <property name="text">
+           <string>Seed</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="seed_lineEdit"/>
+        </item>
         <item>
          <widget class="QLabel" name="map_size_label">
           <property name="text">

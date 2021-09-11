@@ -35,7 +35,7 @@ class Mapgen:
         }
 
     def __init__(self):
-        self.seed = random.random()
+        self.seed = str(random.randint(0, 2 ** 64))
         self.init_parameters()
         self.data = {}
 
@@ -114,7 +114,7 @@ class Mapgen:
         # Creat a height map
         random.seed(seeds["height_seed"])
         self.data["height_array"] = self.heightMap(
-            self.parameters["length"] + 1, self.parameters["width"] + 1, self.parameters["terrain"], self.parameters["smoothness"])
+            self.parameters["length"] + 1, self.parameters["width"] + 1, random.randint(0, 25), self.parameters["smoothness"])
 
         # Flood the low areas
         self.flood(self.data["wall_array"], self.data["height_array"],

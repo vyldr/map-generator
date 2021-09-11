@@ -19,6 +19,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.randomize_button.clicked.connect(self.randomize_input)
         self.generate_button.clicked.connect(self.new_map)
         self.save_button.clicked.connect(self.saveFile)
+        self.seed_lineEdit.textEdited.connect(self.setSeed)
 
         # Start the map generator
         self.map_generator = mapgen.Mapgen()
@@ -94,6 +95,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def generate_map(self):
         if not self.generator_locked:
             success = self.map_generator.mapgen()
+            self.seed_lineEdit.setText(self.map_generator.seed)
             self.displayPreview()
 
             # Enable/disable the save button
@@ -112,7 +114,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.new_map()
 
     def new_map(self):
-        self.map_generator.seed = random.random()
+        self.map_generator.seed = str(random.randint(0, 2 ** 64))
         self.generate_map()
 
     # Save the output to a file
@@ -131,6 +133,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             output_file = open(filename, 'w')
             output_file.write(self.map_generator.mm_text())
             output_file.close()
+
+    # Set the random seed
+
+    def setSeed(self, value):
+        self.map_generator.seed = value
+        self.generate_map()
+
 
     def updateView(self, value):
         self.view = value
