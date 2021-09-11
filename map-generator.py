@@ -13,7 +13,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
-        self.view_combobox.addItems(['Map view', 'Height view'])
+        self.view_combobox.addItems(
+            ['Map view', 'Height view', 'Spoiler mode'])
         self.view_combobox.currentTextChanged.connect(self.updateView)
         self.randomize_button.clicked.connect(self.randomize_input)
         self.generate_button.clicked.connect(self.new_map)
@@ -143,6 +144,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if self.view == 'Height view':
             self.displayPreviewHeight()
+
+        if self.view == 'Spoiler mode':
+            self.displayNoPreview()
+
+    # Display a black screen
+    def displayNoPreview(self):
+
+        # Create the image
+        img = Image.new('RGBA', (1, 1), color=(0, 0, 0, 0))
+
+        # Display the image
+        image = ImageQt(img)
+        pixmap = QtGui.QPixmap.fromImage(image).copy()
+        self.map_preview.setPixmap(pixmap)
+
 
     # Display a preview of the heightmap
 
