@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>820</width>
+    <width>821</width>
     <height>558</height>
    </rect>
   </property>
@@ -34,6 +34,12 @@
         <width>300</width>
         <height>16777215</height>
        </size>
+      </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOn</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
       </property>
       <property name="widgetResizable">
        <bool>true</bool>
@@ -68,16 +74,35 @@
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QLabel" name="seed_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Seed</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="seed_lineEdit"/>
+         <widget class="QLineEdit" name="seed_lineEdit">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="map_size_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Map size</string>
           </property>
@@ -85,6 +110,12 @@
         </item>
         <item>
          <widget class="QSlider" name="map_size_slider">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -113,16 +144,35 @@
         </item>
         <item>
          <widget class="QLabel" name="biome_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Biome</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="biome_combobox"/>
+         <widget class="QComboBox" name="biome_combobox">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="solid_rock_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Solid Rock</string>
           </property>
@@ -130,6 +180,12 @@
         </item>
         <item>
          <widget class="QSlider" name="solid_rock_slider">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -140,6 +196,12 @@
         </item>
         <item>
          <widget class="QLabel" name="other_rock_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Other Rock</string>
           </property>
@@ -147,6 +209,12 @@
         </item>
         <item>
          <widget class="QSlider" name="other_rock_slider">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -154,6 +222,12 @@
         </item>
         <item>
          <widget class="QLabel" name="energy_crystals_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Energy Crystals</string>
           </property>
@@ -161,6 +235,12 @@
         </item>
         <item>
          <widget class="QSlider" name="energy_crystals_slider">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -168,6 +248,12 @@
         </item>
         <item>
          <widget class="QLabel" name="ore_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Ore</string>
           </property>
@@ -175,6 +261,12 @@
         </item>
         <item>
          <widget class="QSlider" name="ore_slider">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -182,6 +274,12 @@
         </item>
         <item>
          <widget class="QLabel" name="ecs_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Energy Crystal Seams</string>
           </property>
@@ -189,6 +287,12 @@
         </item>
         <item>
          <widget class="QSlider" name="ecs_slider">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -196,6 +300,12 @@
         </item>
         <item>
          <widget class="QLabel" name="os_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Ore Seams</string>
           </property>
@@ -203,6 +313,12 @@
         </item>
         <item>
          <widget class="QSlider" name="os_slider">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -210,6 +326,12 @@
         </item>
         <item>
          <widget class="QLabel" name="rs_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Recharge Seams</string>
           </property>
@@ -217,6 +339,12 @@
         </item>
         <item>
          <widget class="QSlider" name="rs_slider">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -224,6 +352,12 @@
         </item>
         <item>
          <widget class="QLabel" name="flood_level_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Water/Lava Flood Level</string>
           </property>
@@ -231,6 +365,12 @@
         </item>
         <item>
          <widget class="QSlider" name="flood_level_slider">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -238,16 +378,35 @@
         </item>
         <item>
          <widget class="QLabel" name="flood_type_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Water or Lava</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="flood_type_combobox"/>
+         <widget class="QComboBox" name="flood_type_combobox">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="erosion_sources_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Erosion Sources</string>
           </property>
@@ -255,6 +414,12 @@
         </item>
         <item>
          <widget class="QSlider" name="erosion_sources_slider">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -262,6 +427,12 @@
         </item>
         <item>
          <widget class="QLabel" name="landslide_sources_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Landslide Sources</string>
           </property>
@@ -269,6 +440,12 @@
         </item>
         <item>
          <widget class="QSlider" name="landslide_sources_slider">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -276,6 +453,12 @@
         </item>
         <item>
          <widget class="QLabel" name="slugs_label">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Slimy Slug Holes</string>
           </property>
@@ -283,6 +466,12 @@
         </item>
         <item>
          <widget class="QSlider" name="slugs_slider">
+          <property name="maximumSize">
+           <size>
+            <width>264</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
